@@ -1,6 +1,3 @@
-#bonjour je change le code
-
-
 import pygame, random, sys
 from pygame.locals import *
 
