@@ -94,8 +94,23 @@ while True:
     reverseCheat = slowCheat = False
     pygame.mixer.music.play(-1, 0.0)
 
+    
+
     while True: # The game loop runs while the game part is playing.
         score += 1 # Increase score.
+        
+        # Change background (season) based on score
+        if score == 500:
+            BACKGROUNDIMAGE = pygame.image.load("back_été.png")
+            BACKGROUNDIMAGE = pygame.transform.scale(BACKGROUNDIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
+
+        if score == 1000:
+            BACKGROUNDIMAGE = pygame.image.load("back_automne.png")
+            BACKGROUNDIMAGE = pygame.transform.scale(BACKGROUNDIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
+
+        if score == 1500:
+            BACKGROUNDIMAGE = pygame.image.load("back_hiver.png")
+            BACKGROUNDIMAGE = pygame.transform.scale(BACKGROUNDIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
 
         for event in pygame.event.get():
             if event.type == QUIT:
