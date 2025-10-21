@@ -48,18 +48,22 @@ def drawText(text, font, surface, x, y):
 # Set up pygame, the window, and the mouse cursor.
 pygame.init()
 
-# Get info about the current display to set the game to full screen.
-screen_info = pygame.display.Info()
-WINDOWWIDTH = screen_info.current_w
-WINDOWHEIGHT = screen_info.current_h
+mainClock = pygame.time.Clock()
+windowSurface = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+WINDOWWIDTH, WINDOWHEIGHT = windowSurface.get_size()
+pygame.display.set_caption('Dodger')
+pygame.mouse.set_visible(False)
 
 # Scale the background image to fit the screen.
 BACKGROUNDIMAGE = pygame.transform.scale(BACKGROUNDIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
 
-mainClock = pygame.time.Clock()
-windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), pygame.FULLSCREEN)
-pygame.display.set_caption('Dodger')
-pygame.mouse.set_visible(False)
+#Make dictionnary with backgrounds adjusted to screen size
+backgrounds = {
+    "printemps": pygame.transform.scale(pygame.image.load("back_printemps.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "ete": pygame.transform.scale(pygame.image.load("back_été.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "automne": pygame.transform.scale(pygame.image.load("back_automne.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "hiver": pygame.transform.scale(pygame.image.load("back_hiver.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
+}
 
 # Set up the fonts.
 font = pygame.font.SysFont(None, 48)
@@ -100,17 +104,14 @@ while True:
         score += 1 # Increase score.
         
         # Change background (season) based on score
+        if score == 1:
+            BACKGROUNDIMAGE = backgrounds["printemps"]
         if score == 500:
-            BACKGROUNDIMAGE = pygame.image.load("back_été.png")
-            BACKGROUNDIMAGE = pygame.transform.scale(BACKGROUNDIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
-
+            BACKGROUNDIMAGE = backgrounds["ete"]
         if score == 1000:
-            BACKGROUNDIMAGE = pygame.image.load("back_automne.png")
-            BACKGROUNDIMAGE = pygame.transform.scale(BACKGROUNDIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
-
+            BACKGROUNDIMAGE = backgrounds["automne"]
         if score == 1500:
-            BACKGROUNDIMAGE = pygame.image.load("back_hiver.png")
-            BACKGROUNDIMAGE = pygame.transform.scale(BACKGROUNDIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
+            BACKGROUNDIMAGE = backgrounds["hiver"]
 
         for event in pygame.event.get():
             if event.type == QUIT:
