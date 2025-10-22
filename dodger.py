@@ -275,21 +275,6 @@ while True:
             orbEffectTimer = 0
             particles.clear()
 
-        # --- EFFET D’ÉTINCELLES ---
-        if orbEffectTimer:
-            for _ in range(5):
-                particles.append([
-                    [playerRect.centerx, playerRect.centery],
-                    [random.uniform(-2, 2), random.uniform(-2, -1)],
-                    random.randint(3, 6)
-                ])
-        for p in particles[:]:
-            p[0][0] += p[1][0]
-            p[0][1] += p[1][1]
-            p[2] -= 0.1
-            if p[2] <= 0:
-                particles.remove(p)
-
         # --- AFFICHAGE ---
         windowSurface.blit(BACKGROUNDIMAGE, (0, 0))
 
