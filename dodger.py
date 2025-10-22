@@ -17,41 +17,6 @@ BADDIEMINSPEED = 5
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 30
 
-orbImage = pygame.image.load('orb.png')
-orbSize = 30
-orbs = []
-ADDNEWORBRATE = 400  # tous les X frames
-orbAddCounter = 0
-orbEffectTimer = 0
-# Ajouter une orbe de temps en temps
-orbAddCounter += 1
-if orbAddCounter >= ADDNEWORBRATE:
-    orbAddCounter = 0
-    newOrb = {
-        'rect': pygame.Rect(
-            random.randint(0, WINDOWWIDTH - orbSize),
-            random.randint(0, WINDOWHEIGHT - 200),
-            orbSize, orbSize
-        ),
-        'surface': pygame.transform.scale(orbImage, (orbSize, orbSize))
-    }
-    orbs.append(newOrb)
-for o in orbs[:]:
-    if playerRect.colliderect(o['rect']):
-        orbs.remove(o)
-        GRAVITY = 0.4        # gravité réduite
-        BADDIEMINSPEED = 2   # ennemis plus lents
-        BADDIEMAXSPEED = 4
-        orbEffectTimer = pygame.time.get_ticks()  # mémoriser le moment
-if orbEffectTimer and pygame.time.get_ticks() - orbEffectTimer > 5000:
-    GRAVITY = 1
-    BADDIEMINSPEED = 5
-    BADDIEMAXSPEED = 8
-    orbEffectTimer = 0
-for o in orbs:
-    windowSurface.blit(o['surface'], o['rect'])
-
-
 #Set up functions.
 def terminate():
     pygame.quit()
@@ -131,12 +96,51 @@ while True:
     moveLeft = moveRight = False
     reverseCheat = slowCheat = False
     pygame.mixer.music.play(-1, 0.0)
-
+#les orbes
+orbSize = 30
+    orbs = []
+    ADDNEWORBRATE = 400
+    orbAddCounter = 0
+    orbEffectTimer = 0
+    particles = []
     
+# --- GÉNÉRATION DES ORBES ---
+        orbAddCounter += 1
+        if orbAddCounter >= ADDNEWORBRATE:
+            orbAddCounter = 0
+            newOrb = {
+                'rect': pygame.Rect(
+                    random.randint(0, WINDOWWIDTH - orbSize),
+                    random.randint(100, WINDOWHEIGHT - 200),
+                    orbSize, orbSize
+                ),
+                'surface': pygame.transform.scale(orbImage, (orbSize, orbSize))
+            }
+            orbs.append(newOrb)
 
-    while True: # The game loop runs while the game part is playing.
+ # --- COLLISION AVEC LES ORBES ---
+        for o in orbs[:]:
+            if playerRect.colliderect(o['rect']):
+                orbs.remove(o)
+                GRAVITY = 0.4
+                BADDIEMINSPEED = 2
+                BADDIEMAXSPEED = 4
+                orbEffectTimer = pygame.time.get_ticks()
+# --- FIN EFFET ORBE ---
+        if orbEffectTimer and pygame.time.get_ticks() - orbEffectTimer > 5000:
+            GRAVITY = 1
+            BADDIEMINSPEED = 5
+            BADDIEMAXSPEED = 8
+            orbEffectTimer = 0
+            particles.clear()
+ # --- AFFICHAGE ORBE ---
+        windowSurface.blit(BACKGROUNDIMAGE, (0, 0))
+        for o in orbs:
+            windowSurface.blit(o['surface'], o['rect'])
+
+
+while True: # The game loop runs while the game part is playing.
         score += 1 # Increase score.
-        
         # Change background (season) based on score
         if score == 1:
             BACKGROUNDIMAGE = backgrounds["printemps"]
