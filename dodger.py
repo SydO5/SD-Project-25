@@ -195,33 +195,35 @@ while True:
             }
             orbs.append(newOrb)
 
-        # --- GÉNÉRATION DES PLATEFORMES ---
-        platformAddCounter += 1
-        if platformAddCounter >= ADDNEWPLATFORMRATE:
-            platformAddCounter = 0
-            platformWidth = 200
-            platformHeight = 70
-            # Choisir la plateforme correspondant à la saison actuelle
-        if BACKGROUNDIMAGE == backgrounds["printemps"]:
-            platformImage = pygame.image.load("printemps.png")
-        elif BACKGROUNDIMAGE == backgrounds["ete"]:
-            platformImage = pygame.image.load("ete.png")
-        elif BACKGROUNDIMAGE == backgrounds["automne"]:
-            platformImage = pygame.image.load("automne.png")
-        elif BACKGROUNDIMAGE == backgrounds["hiver"]:
-            platformImage = pygame.image.load("hiver.png")
-        else:
-            platformImage = pygame.image.load("printemps.png")  # fallback
-            newPlatform = {
-                'rect': pygame.Rect(
-                    WINDOWWIDTH,
-                    random.randint(WINDOWHEIGHT - 350, WINDOWHEIGHT - 150),
-                    platformWidth,
-                    platformHeight
-                ),
-                'surface': pygame.transform.scale(platformImage, (platformWidth, platformHeight))
-            }
-            platforms.append(newPlatform)
+       # --- GÉNÉRATION DES PLATEFORMES ---
+platformAddCounter += 1
+if platformAddCounter >= ADDNEWPLATFORMRATE:
+    platformAddCounter = 0
+    platformWidth = 200
+    platformHeight = 40
+
+    # Sélection de la plateforme selon la saison actuelle
+    if BACKGROUNDIMAGE == backgrounds["printemps"]:
+        platformImage = pygame.image.load("printemps.png")
+    elif BACKGROUNDIMAGE == backgrounds["ete"]:
+        platformImage = pygame.image.load("ete.png")
+    elif BACKGROUNDIMAGE == backgrounds["automne"]:
+        platformImage = pygame.image.load("automne.png")
+    elif BACKGROUNDIMAGE == backgrounds["hiver"]:
+        platformImage = pygame.image.load("hiver.png")
+    else:
+        platformImage = pygame.image.load("printemps.png")  # fallback
+
+    newPlatform = {
+        'rect': pygame.Rect(
+            WINDOWWIDTH,
+            random.randint(WINDOWHEIGHT - 350, WINDOWHEIGHT - 150),
+            platformWidth,
+            platformHeight
+        ),
+        'surface': pygame.transform.scale(platformImage, (platformWidth, platformHeight))
+    }
+    platforms.append(newPlatform)
 
         # --- GRAVITÉ & COLLISIONS ---
         PLAYERYSPEED += GRAVITY
