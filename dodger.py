@@ -191,9 +191,9 @@ while True:
             elif slowCheat:
                 b['rect'].move_ip(-1, 0)
 
-        # Delete baddies that have fallen past the left of the screen.
+        # Delete baddies that have gone past the left of the screen.
         for b in baddies[:]:
-            if b['rect'].top > WINDOWHEIGHT:
+            if b['rect'].right < 0:
                 baddies.remove(b)
 
         # Draw the game world on the window.
