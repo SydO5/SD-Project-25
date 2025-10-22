@@ -200,7 +200,7 @@ while True:
         if platformAddCounter >= ADDNEWPLATFORMRATE:
             platformAddCounter = 0
             platformWidth = 200
-            platformHeight = 40
+            platformHeight = 70
             # Choisir la plateforme correspondant à la saison actuelle
         if BACKGROUNDIMAGE == backgrounds["printemps"]:
             platformImage = pygame.image.load("printemps.png")
