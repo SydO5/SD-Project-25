@@ -199,9 +199,19 @@ while True:
         platformAddCounter += 1
         if platformAddCounter >= ADDNEWPLATFORMRATE:
             platformAddCounter = 0
-            platformImage = random.choice(platformImages)
             platformWidth = 200
             platformHeight = 40
+            # Choisir la plateforme correspondant à la saison actuelle
+        if BACKGROUNDIMAGE == backgrounds["printemps"]:
+            platformImage = pygame.image.load("printemps.png")
+        elif BACKGROUNDIMAGE == backgrounds["ete"]:
+            platformImage = pygame.image.load("ete.png")
+        elif BACKGROUNDIMAGE == backgrounds["automne"]:
+            platformImage = pygame.image.load("automne.png")
+        elif BACKGROUNDIMAGE == backgrounds["hiver"]:
+            platformImage = pygame.image.load("hiver.png")
+        else:
+            platformImage = pygame.image.load("printemps.png")  # fallback
             newPlatform = {
                 'rect': pygame.Rect(
                     WINDOWWIDTH,
