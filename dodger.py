@@ -1,7 +1,7 @@
 import pygame, random, sys
 from pygame.locals import *
 
-# Set up some constants.
+# --- CONSTANTES ---
 TEXTCOLOR = (0, 0, 0)
 BACKGROUNDCOLOR = (255, 255, 255)
 BACKGROUNDIMAGE = pygame.image.load("back_printemps.png")
@@ -17,7 +17,7 @@ BADDIEMINSPEED = 5
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 30
 
-#Set up functions.
+# --- FONCTIONS ---
 def terminate():
     pygame.quit()
     sys.exit()
@@ -28,7 +28,7 @@ def waitForPlayerToPressKey():
             if event.type == QUIT:
                 terminate()
             if event.type == KEYDOWN:
-                if event.key == K_ESCAPE: # Pressing ESC quits.
+                if event.key == K_ESCAPE:
                     terminate()
                 return
 
@@ -44,19 +44,16 @@ def drawText(text, font, surface, x, y):
     textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
 
-# Set up pygame, the window, and the mouse cursor.
+# --- INITIALISATION ---
 pygame.init()
-
 mainClock = pygame.time.Clock()
 windowSurface = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
 WINDOWWIDTH, WINDOWHEIGHT = windowSurface.get_size()
 pygame.display.set_caption('Dodger')
 pygame.mouse.set_visible(False)
 
-# Scale the background image to fit the screen.
+# Arrière-plans
 BACKGROUNDIMAGE = pygame.transform.scale(BACKGROUNDIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
-
-#Make dictionnary with backgrounds adjusted to screen size
 backgrounds = {
     "printemps": pygame.transform.scale(pygame.image.load("back_printemps.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
     "ete": pygame.transform.scale(pygame.image.load("back_été.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
@@ -64,28 +61,29 @@ backgrounds = {
     "hiver": pygame.transform.scale(pygame.image.load("back_hiver.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
 }
 
-# Set up the fonts.
+# Police
 font = pygame.font.SysFont(None, 48)
 
-# Set up sounds.
+# Sons
 gameOverSound = pygame.mixer.Sound('gameover.wav')
 pygame.mixer.music.load('background.mid')
 
-# Set up images.
+# Images
 playerImage = pygame.image.load('player.png')
 playerRect = playerImage.get_rect()
 baddieImage = pygame.image.load('baddie.png')
+orbImage = pygame.image.load('orb.png')
 
-# Show the "Start" screen.
+# --- ÉCRAN DE DÉMARRAGE ---
 windowSurface.fill(BACKGROUNDCOLOR)
 drawText('Dodger', font, windowSurface, (WINDOWWIDTH / 2) - 100, (WINDOWHEIGHT / 2) - 50)
-drawText('Press a key to start.', font, windowSurface, (WINDOWWIDTH / 2) - 200 , (WINDOWHEIGHT / 2) )
+drawText('Press a key to start.', font, windowSurface, (WINDOWWIDTH / 2) - 200 , (WINDOWHEIGHT / 2))
 pygame.display.update()
 waitForPlayerToPressKey()
 
+# --- JEU PRINCIPAL ---
 topScore = 0
 while True:
-    # Set up the start of the game.
     playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 50)
     PLAYERYSPEED = 0
     JUMPSLEFT = 2
@@ -96,52 +94,19 @@ while True:
     moveLeft = moveRight = False
     reverseCheat = slowCheat = False
     pygame.mixer.music.play(-1, 0.0)
-#les orbes
-orbSize = 30
+
+    # --- ORBES ---
+    orbSize = 30
     orbs = []
     ADDNEWORBRATE = 400
     orbAddCounter = 0
     orbEffectTimer = 0
     particles = []
-    
-# --- GÉNÉRATION DES ORBES ---
-        orbAddCounter += 1
-        if orbAddCounter >= ADDNEWORBRATE:
-            orbAddCounter = 0
-            newOrb = {
-                'rect': pygame.Rect(
-                    random.randint(0, WINDOWWIDTH - orbSize),
-                    random.randint(100, WINDOWHEIGHT - 200),
-                    orbSize, orbSize
-                ),
-                'surface': pygame.transform.scale(orbImage, (orbSize, orbSize))
-            }
-            orbs.append(newOrb)
 
- # --- COLLISION AVEC LES ORBES ---
-        for o in orbs[:]:
-            if playerRect.colliderect(o['rect']):
-                orbs.remove(o)
-                GRAVITY = 0.4
-                BADDIEMINSPEED = 2
-                BADDIEMAXSPEED = 4
-                orbEffectTimer = pygame.time.get_ticks()
-# --- FIN EFFET ORBE ---
-        if orbEffectTimer and pygame.time.get_ticks() - orbEffectTimer > 5000:
-            GRAVITY = 1
-            BADDIEMINSPEED = 5
-            BADDIEMAXSPEED = 8
-            orbEffectTimer = 0
-            particles.clear()
- # --- AFFICHAGE ORBE ---
-        windowSurface.blit(BACKGROUNDIMAGE, (0, 0))
-        for o in orbs:
-            windowSurface.blit(o['surface'], o['rect'])
-
-
-while True: # The game loop runs while the game part is playing.
-        score += 1 # Increase score.
-        # Change background (season) based on score
+    while True:
+        score += 1
+        
+        # Changement de fond selon score
         if score == 1:
             BACKGROUNDIMAGE = backgrounds["printemps"]
         if score == 500:
@@ -151,10 +116,10 @@ while True: # The game loop runs while the game part is playing.
         if score == 1500:
             BACKGROUNDIMAGE = backgrounds["hiver"]
 
+        # Gestion des événements
         for event in pygame.event.get():
             if event.type == QUIT:
                 terminate()
-
             if event.type == KEYDOWN:
                 if event.key == K_z:
                     reverseCheat = True
@@ -171,7 +136,6 @@ while True: # The game loop runs while the game part is playing.
                 if event.key == K_SPACE and JUMPSLEFT > 0:
                     PLAYERYSPEED = -JUMPPOWER
                     JUMPSLEFT -= 1
-
             if event.type == KEYUP:
                 if event.key == K_z:
                     reverseCheat = False
@@ -180,8 +144,7 @@ while True: # The game loop runs while the game part is playing.
                     slowCheat = False
                     score = 0
                 if event.key == K_ESCAPE:
-                        terminate()
-
+                    terminate()
                 if event.key == K_LEFT or event.key == K_a:
                     moveLeft = False
                 if event.key == K_RIGHT or event.key == K_d:
@@ -189,38 +152,49 @@ while True: # The game loop runs while the game part is playing.
                 if event.key == K_DOWN or event.key == K_s:
                     GRAVITY = 1
 
-        # Add new baddies at the left of the screen, if needed.
+        # --- GÉNÉRATION DES ENNEMIS ---
         if not reverseCheat and not slowCheat:
             baddieAddCounter += 1
         if baddieAddCounter == ADDNEWBADDIERATE:
             baddieAddCounter = 0
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
-            newBaddie = {'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - baddieSize), baddieSize, baddieSize),
-                        'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
-                        'surface':pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
-                        }
-
+            newBaddie = {
+                'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - baddieSize), baddieSize, baddieSize),
+                'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
+                'surface': pygame.transform.scale(baddieImage, (baddieSize, baddieSize))
+            }
             baddies.append(newBaddie)
 
+        # --- GÉNÉRATION DES ORBES ---
+        orbAddCounter += 1
+        if orbAddCounter >= ADDNEWORBRATE:
+            orbAddCounter = 0
+            newOrb = {
+                'rect': pygame.Rect(
+                    random.randint(0, WINDOWWIDTH - orbSize),
+                    random.randint(100, WINDOWHEIGHT - 200),
+                    orbSize, orbSize
+                ),
+                'surface': pygame.transform.scale(orbImage, (orbSize, orbSize))
+            }
+            orbs.append(newOrb)
 
-        # Apply gravity to the player.
+        # --- GRAVITÉ ---
         PLAYERYSPEED += GRAVITY
         playerRect.y += PLAYERYSPEED
-
-        #So player can't fall below the floor.
         if playerRect.bottom >= WINDOWHEIGHT:
             playerRect.bottom = WINDOWHEIGHT
             PLAYERYSPEED = 0
             on_ground = True
             JUMPSLEFT = 2
 
-        # Move the player around.
+        # --- MOUVEMENT JOUEUR ---
         if moveLeft and playerRect.left > 0:
-            playerRect.move_ip(-1 * PLAYERMOVERATE, 0)
+            playerRect.move_ip(-PLAYERMOVERATE, 0)
         if moveRight and playerRect.right < WINDOWWIDTH:
             playerRect.move_ip(PLAYERMOVERATE, 0)
 
-        # Move the baddies to the left.
+        # --- MOUVEMENT ENNEMIS ---
         for b in baddies:
             if not reverseCheat and not slowCheat:
                 b['rect'].move_ip(-b['speed'],0)
@@ -228,45 +202,70 @@ while True: # The game loop runs while the game part is playing.
                 b['rect'].move_ip(5, 0)
             elif slowCheat:
                 b['rect'].move_ip(-1, 0)
-
-        # Delete baddies that have gone past the left of the screen.
         for b in baddies[:]:
             if b['rect'].right < 0:
                 baddies.remove(b)
 
-        # Draw the game world on the window.
-        windowSurface.blit(BACKGROUNDIMAGE  , (0, 0))
+        # --- COLLISION AVEC LES ORBES ---
+        for o in orbs[:]:
+            if playerRect.colliderect(o['rect']):
+                orbs.remove(o)
+                GRAVITY = 0.4
+                BADDIEMINSPEED = 2
+                BADDIEMAXSPEED = 4
+                orbEffectTimer = pygame.time.get_ticks()
 
-        # Draw the score and top score.
-        drawText('Score: %s' % (score), font, windowSurface, 10, 0)
-        drawText('Top Score: %s' % (topScore), font, windowSurface, 10, 40)
+        # --- FIN EFFET ORBE ---
+        if orbEffectTimer and pygame.time.get_ticks() - orbEffectTimer > 5000:
+            GRAVITY = 1
+            BADDIEMINSPEED = 5
+            BADDIEMAXSPEED = 8
+            orbEffectTimer = 0
+            particles.clear()
 
-        # Draw the player's rectangle.
-        windowSurface.blit(playerImage, playerRect)
+        # --- EFFET D’ÉTINCELLES ---
+        if orbEffectTimer:
+            for _ in range(5):
+                particles.append([
+                    [playerRect.centerx, playerRect.centery],
+                    [random.uniform(-2, 2), random.uniform(-2, -1)],
+                    random.randint(3, 6)
+                ])
+        for p in particles[:]:
+            p[0][0] += p[1][0]
+            p[0][1] += p[1][1]
+            p[2] -= 0.1
+            if p[2] <= 0:
+                particles.remove(p)
 
-        # Draw each baddie.
+        # --- AFFICHAGE ---
+        windowSurface.blit(BACKGROUNDIMAGE, (0, 0))
+        for o in orbs:
+            windowSurface.blit(o['surface'], o['rect'])
         for b in baddies:
             windowSurface.blit(b['surface'], b['rect'])
+        windowSurface.blit(playerImage, playerRect)
+        for p in particles:
+            pygame.draw.circle(windowSurface, (100, 150, 255), (int(p[0][0]), int(p[0][1])), int(p[2]))
 
+        drawText('Score: %s' % (score), font, windowSurface, 10, 0)
+        drawText('Top Score: %s' % (topScore), font, windowSurface, 10, 40)
         pygame.display.update()
 
-        # Check if any of the baddies have hit the player.
         if playerHasHitBaddie(playerRect, baddies):
             if score > topScore:
-                topScore = score # set new top score
+                topScore = score
             break
 
         mainClock.tick(FPS)
 
-    # Stop the game and show the "Game Over" screen.
+    # --- GAME OVER ---
     pygame.mixer.music.stop()
     gameOverSound.play()
-
     drawText('GAME OVER', font, windowSurface, (WINDOWWIDTH / 2) - 150, (WINDOWHEIGHT / 2) - 50)
     drawText('Press a key to play again.', font, windowSurface, (WINDOWWIDTH / 2) - 250, (WINDOWHEIGHT / 2))
     pygame.display.update()
     waitForPlayerToPressKey()
-
     gameOverSound.stop()
 
 
