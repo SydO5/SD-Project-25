@@ -92,7 +92,7 @@ waitForPlayerToPressKey()
 # --- JEU PRINCIPAL ---
 topScore = 0
 while True:
-    playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 50)
+    playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 100)
     PLAYERYSPEED = 0
     JUMPSLEFT = 2
     on_ground = False
@@ -116,6 +116,9 @@ while True:
     ADDNEWPLATFORMRATE = 200
     platformAddCounter = 0
 
+    # --- SOL PERMANENT ---
+    floor_rect = pygame.Rect(0, WINDOWHEIGHT - 50, WINDOWWIDTH, 50)
+
     while True:
         score += 1
         
@@ -138,13 +141,13 @@ while True:
                     reverseCheat = True
                 if event.key == K_x:
                     slowCheat = True
-                if event.key == K_LEFT or event.key == K_a:
+                if event.key in (K_LEFT, K_a):
                     moveRight = False
                     moveLeft = True
-                if event.key == K_RIGHT or event.key == K_d:
+                if event.key in (K_RIGHT, K_d):
                     moveLeft = False
                     moveRight = True
-                if event.key == K_DOWN or event.key == K_s:
+                if event.key in (K_DOWN, K_s):
                     GRAVITY = 3
                 if event.key == K_SPACE and JUMPSLEFT > 0:
                     PLAYERYSPEED = -JUMPPOWER
@@ -158,11 +161,11 @@ while True:
                     score = 0
                 if event.key == K_ESCAPE:
                     terminate()
-                if event.key == K_LEFT or event.key == K_a:
+                if event.key in (K_LEFT, K_a):
                     moveLeft = False
-                if event.key == K_RIGHT or event.key == K_d:
+                if event.key in (K_RIGHT, K_d):
                     moveRight = False
-                if event.key == K_DOWN or event.key == K_s:
+                if event.key in (K_DOWN, K_s):
                     GRAVITY = 1
 
         # --- GÉNÉRATION DES ENNEMIS ---
@@ -172,7 +175,7 @@ while True:
             baddieAddCounter = 0
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
             newBaddie = {
-                'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - baddieSize), baddieSize, baddieSize),
+                'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - baddieSize - 50), baddieSize, baddieSize),
                 'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
                 'surface': pygame.transform.scale(baddieImage, (baddieSize, baddieSize))
             }
@@ -197,16 +200,16 @@ while True:
         if platformAddCounter >= ADDNEWPLATFORMRATE:
             platformAddCounter = 0
             platformImage = random.choice(platformImages)
-            platformWidth = platformImage.get_width()
-            platformHeight = platformImage.get_height()
+            platformWidth = 200
+            platformHeight = 40
             newPlatform = {
                 'rect': pygame.Rect(
                     WINDOWWIDTH,
-                    random.randint(WINDOWHEIGHT - 350, WINDOWHEIGHT - 100),
+                    random.randint(WINDOWHEIGHT - 350, WINDOWHEIGHT - 150),
                     platformWidth,
                     platformHeight
                 ),
-                'surface': platformImage
+                'surface': pygame.transform.scale(platformImage, (platformWidth, platformHeight))
             }
             platforms.append(newPlatform)
 
@@ -224,6 +227,13 @@ while True:
                     JUMPSLEFT = 2
                     on_ground = True
 
+        # Collision avec le sol
+        if playerRect.colliderect(floor_rect):
+            playerRect.bottom = floor_rect.top
+            PLAYERYSPEED = 0
+            JUMPSLEFT = 2
+            on_ground = True
+
         # --- MOUVEMENT JOUEUR ---
         if moveLeft and playerRect.left > 0:
             playerRect.move_ip(-PLAYERMOVERATE, 0)
@@ -233,7 +243,7 @@ while True:
         # --- MOUVEMENT ENNEMIS & PLATEFORMES ---
         for b in baddies:
             if not reverseCheat and not slowCheat:
-                b['rect'].move_ip(-b['speed'],0)
+                b['rect'].move_ip(-b['speed'], 0)
             elif reverseCheat:
                 b['rect'].move_ip(5, 0)
             elif slowCheat:
@@ -282,12 +292,14 @@ while True:
 
         # --- AFFICHAGE ---
         windowSurface.blit(BACKGROUNDIMAGE, (0, 0))
+
         for o in orbs:
             windowSurface.blit(o['surface'], o['rect'])
         for p in platforms:
             windowSurface.blit(p['surface'], p['rect'])
         for b in baddies:
             windowSurface.blit(b['surface'], b['rect'])
+        pygame.draw.rect(windowSurface, (50, 200, 50), floor_rect)  # Sol permanent (vert)
         windowSurface.blit(playerImage, playerRect)
         for p in particles:
             pygame.draw.circle(windowSurface, (100, 150, 255), (int(p[0][0]), int(p[0][1])), int(p[2]))
