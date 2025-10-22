@@ -47,7 +47,7 @@ def drawText(text, font, surface, x, y):
 # --- INITIALISATION ---
 pygame.init()
 mainClock = pygame.time.Clock()
-windowSurface = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+windowSurface = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 WINDOWWIDTH, WINDOWHEIGHT = windowSurface.get_size()
 pygame.display.set_caption('Dodger')
 pygame.mouse.set_visible(False)
@@ -85,7 +85,7 @@ platformImages = {
 # --- ÉCRAN DE DÉMARRAGE ---
 windowSurface.fill(BACKGROUNDCOLOR)
 drawText('Dodger', font, windowSurface, (WINDOWWIDTH / 2) - 100, (WINDOWHEIGHT / 2) - 50)
-drawText('Press a key to start.', font, windowSurface, (WINDOWWIDTH / 2) - 200 , (WINDOWHEIGHT / 2))
+drawText('Press a key to start.', font, windowSurface, (WINDOWWIDTH / 2) - 200, (WINDOWHEIGHT / 2))
 pygame.display.update()
 waitForPlayerToPressKey()
 
@@ -121,51 +121,51 @@ while True:
 
     while True:
         score += 1
-        
-        # Changement de fond selon score
+
+        # --- CHANGEMENT DE FOND SELON SCORE ---
         if score == 1:
             BACKGROUNDIMAGE = backgrounds["printemps"]
-        if score == 500:
+        elif score == 500:
             BACKGROUNDIMAGE = backgrounds["ete"]
-        if score == 1000:
+        elif score == 1000:
             BACKGROUNDIMAGE = backgrounds["automne"]
-        if score == 1500:
+        elif score == 1500:
             BACKGROUNDIMAGE = backgrounds["hiver"]
 
-        # Gestion des événements
+        # --- GESTION DES ÉVÉNEMENTS ---
         for event in pygame.event.get():
             if event.type == QUIT:
                 terminate()
             if event.type == KEYDOWN:
                 if event.key == K_z:
                     reverseCheat = True
-                if event.key == K_x:
+                elif event.key == K_x:
                     slowCheat = True
-                if event.key in (K_LEFT, K_a):
+                elif event.key in (K_LEFT, K_a):
                     moveRight = False
                     moveLeft = True
-                if event.key in (K_RIGHT, K_d):
+                elif event.key in (K_RIGHT, K_d):
                     moveLeft = False
                     moveRight = True
-                if event.key in (K_DOWN, K_s):
+                elif event.key in (K_DOWN, K_s):
                     GRAVITY = 3
-                if event.key == K_SPACE and JUMPSLEFT > 0:
+                elif event.key == K_SPACE and JUMPSLEFT > 0:
                     PLAYERYSPEED = -JUMPPOWER
                     JUMPSLEFT -= 1
-            if event.type == KEYUP:
+            elif event.type == KEYUP:
                 if event.key == K_z:
                     reverseCheat = False
                     score = 0
-                if event.key == K_x:
+                elif event.key == K_x:
                     slowCheat = False
                     score = 0
-                if event.key == K_ESCAPE:
+                elif event.key == K_ESCAPE:
                     terminate()
-                if event.key in (K_LEFT, K_a):
+                elif event.key in (K_LEFT, K_a):
                     moveLeft = False
-                if event.key in (K_RIGHT, K_d):
+                elif event.key in (K_RIGHT, K_d):
                     moveRight = False
-                if event.key in (K_DOWN, K_s):
+                elif event.key in (K_DOWN, K_s):
                     GRAVITY = 1
 
         # --- GÉNÉRATION DES ENNEMIS ---
@@ -175,7 +175,8 @@ while True:
             baddieAddCounter = 0
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
             newBaddie = {
-                'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - baddieSize - 50), baddieSize, baddieSize),
+                'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - baddieSize - 50),
+                                    baddieSize, baddieSize),
                 'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
                 'surface': pygame.transform.scale(baddieImage, (baddieSize, baddieSize))
             }
@@ -296,7 +297,8 @@ while True:
             windowSurface.blit(p['surface'], p['rect'])
         for b in baddies:
             windowSurface.blit(b['surface'], b['rect'])
-        pygame.draw.rect(windowSurface, (50, 200, 50), floor_rect)  # Sol permanent (vert)
+
+        pygame.draw.rect(windowSurface, (50, 200, 50), floor_rect)  # Sol permanent
         windowSurface.blit(playerImage, playerRect)
 
         drawText(f'Score: {score}', font, windowSurface, 10, 0)
@@ -319,5 +321,6 @@ while True:
     pygame.display.update()
     waitForPlayerToPressKey()
     gameOverSound.stop()
+
 
 
