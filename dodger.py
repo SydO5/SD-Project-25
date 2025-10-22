@@ -74,6 +74,14 @@ playerRect = playerImage.get_rect()
 baddieImage = pygame.image.load('baddie.png')
 orbImage = pygame.image.load('orb.png')
 
+# --- IMAGES DE PLATEFORMES ---
+platformImages = [
+    pygame.image.load("printemps.png"),
+    pygame.image.load("ete.png"),
+    pygame.image.load("automne.png"),
+    pygame.image.load("hiver.png")
+]
+
 # --- ÉCRAN DE DÉMARRAGE ---
 windowSurface.fill(BACKGROUNDCOLOR)
 drawText('Dodger', font, windowSurface, (WINDOWWIDTH / 2) - 100, (WINDOWHEIGHT / 2) - 50)
@@ -102,6 +110,11 @@ while True:
     orbAddCounter = 0
     orbEffectTimer = 0
     particles = []
+
+    # --- PLATEFORMES ---
+    platforms = []
+    ADDNEWPLATFORMRATE = 200
+    platformAddCounter = 0
 
     while True:
         score += 1
@@ -179,14 +192,37 @@ while True:
             }
             orbs.append(newOrb)
 
-        # --- GRAVITÉ ---
+        # --- GÉNÉRATION DES PLATEFORMES ---
+        platformAddCounter += 1
+        if platformAddCounter >= ADDNEWPLATFORMRATE:
+            platformAddCounter = 0
+            platformImage = random.choice(platformImages)
+            platformWidth = platformImage.get_width()
+            platformHeight = platformImage.get_height()
+            newPlatform = {
+                'rect': pygame.Rect(
+                    WINDOWWIDTH,
+                    random.randint(WINDOWHEIGHT - 350, WINDOWHEIGHT - 100),
+                    platformWidth,
+                    platformHeight
+                ),
+                'surface': platformImage
+            }
+            platforms.append(newPlatform)
+
+        # --- GRAVITÉ & COLLISIONS ---
         PLAYERYSPEED += GRAVITY
         playerRect.y += PLAYERYSPEED
-        if playerRect.bottom >= WINDOWHEIGHT:
-            playerRect.bottom = WINDOWHEIGHT
-            PLAYERYSPEED = 0
-            on_ground = True
-            JUMPSLEFT = 2
+        on_ground = False
+
+        # Collision avec plateformes
+        for p in platforms:
+            if playerRect.colliderect(p['rect']) and PLAYERYSPEED >= 0:
+                if playerRect.bottom <= p['rect'].bottom:
+                    playerRect.bottom = p['rect'].top
+                    PLAYERYSPEED = 0
+                    JUMPSLEFT = 2
+                    on_ground = True
 
         # --- MOUVEMENT JOUEUR ---
         if moveLeft and playerRect.left > 0:
@@ -194,7 +230,7 @@ while True:
         if moveRight and playerRect.right < WINDOWWIDTH:
             playerRect.move_ip(PLAYERMOVERATE, 0)
 
-        # --- MOUVEMENT ENNEMIS ---
+        # --- MOUVEMENT ENNEMIS & PLATEFORMES ---
         for b in baddies:
             if not reverseCheat and not slowCheat:
                 b['rect'].move_ip(-b['speed'],0)
@@ -205,6 +241,12 @@ while True:
         for b in baddies[:]:
             if b['rect'].right < 0:
                 baddies.remove(b)
+
+        for p in platforms:
+            p['rect'].move_ip(-5, 0)
+        for p in platforms[:]:
+            if p['rect'].right < 0:
+                platforms.remove(p)
 
         # --- COLLISION AVEC LES ORBES ---
         for o in orbs[:]:
@@ -242,16 +284,19 @@ while True:
         windowSurface.blit(BACKGROUNDIMAGE, (0, 0))
         for o in orbs:
             windowSurface.blit(o['surface'], o['rect'])
+        for p in platforms:
+            windowSurface.blit(p['surface'], p['rect'])
         for b in baddies:
             windowSurface.blit(b['surface'], b['rect'])
         windowSurface.blit(playerImage, playerRect)
         for p in particles:
             pygame.draw.circle(windowSurface, (100, 150, 255), (int(p[0][0]), int(p[0][1])), int(p[2]))
 
-        drawText('Score: %s' % (score), font, windowSurface, 10, 0)
-        drawText('Top Score: %s' % (topScore), font, windowSurface, 10, 40)
+        drawText(f'Score: {score}', font, windowSurface, 10, 0)
+        drawText(f'Top Score: {topScore}', font, windowSurface, 10, 40)
         pygame.display.update()
 
+        # --- COLLISION AVEC ENNEMIS ---
         if playerHasHitBaddie(playerRect, baddies):
             if score > topScore:
                 topScore = score
