@@ -75,12 +75,12 @@ baddieImage = pygame.image.load('baddie.png')
 orbImage = pygame.image.load('orb.png')
 
 # --- IMAGES DE PLATEFORMES ---
-platformImages = [
-    pygame.image.load("printemps.png"),
-    pygame.image.load("ete.png"),
-    pygame.image.load("automne.png"),
-    pygame.image.load("hiver.png")
-]
+platformImages = {
+    "printemps": pygame.image.load("printemps.png"),
+    "ete": pygame.image.load("ete.png"),
+    "automne": pygame.image.load("automne.png"),
+    "hiver": pygame.image.load("hiver.png")
+}
 
 # --- ÉCRAN DE DÉMARRAGE ---
 windowSurface.fill(BACKGROUNDCOLOR)
@@ -195,35 +195,35 @@ while True:
             }
             orbs.append(newOrb)
 
-       # --- GÉNÉRATION DES PLATEFORMES ---
-platformAddCounter += 1
-if platformAddCounter >= ADDNEWPLATFORMRATE:
-    platformAddCounter = 0
-    platformWidth = 200
-    platformHeight = 40
+        # --- GÉNÉRATION DES PLATEFORMES ---
+        platformAddCounter += 1
+        if platformAddCounter >= ADDNEWPLATFORMRATE:
+            platformAddCounter = 0
+            platformWidth = 200
+            platformHeight = 40
 
-    # Sélection de la plateforme selon la saison actuelle
-    if BACKGROUNDIMAGE == backgrounds["printemps"]:
-        platformImage = pygame.image.load("printemps.png")
-    elif BACKGROUNDIMAGE == backgrounds["ete"]:
-        platformImage = pygame.image.load("ete.png")
-    elif BACKGROUNDIMAGE == backgrounds["automne"]:
-        platformImage = pygame.image.load("automne.png")
-    elif BACKGROUNDIMAGE == backgrounds["hiver"]:
-        platformImage = pygame.image.load("hiver.png")
-    else:
-        platformImage = pygame.image.load("printemps.png")  # fallback
+            # Choisir la plateforme correspondant au fond actuel
+            if BACKGROUNDIMAGE == backgrounds["printemps"]:
+                platformImage = platformImages["printemps"]
+            elif BACKGROUNDIMAGE == backgrounds["ete"]:
+                platformImage = platformImages["ete"]
+            elif BACKGROUNDIMAGE == backgrounds["automne"]:
+                platformImage = platformImages["automne"]
+            elif BACKGROUNDIMAGE == backgrounds["hiver"]:
+                platformImage = platformImages["hiver"]
+            else:
+                platformImage = platformImages["printemps"]
 
-    newPlatform = {
-        'rect': pygame.Rect(
-            WINDOWWIDTH,
-            random.randint(WINDOWHEIGHT - 350, WINDOWHEIGHT - 150),
-            platformWidth,
-            platformHeight
-        ),
-        'surface': pygame.transform.scale(platformImage, (platformWidth, platformHeight))
-    }
-    platforms.append(newPlatform)
+            newPlatform = {
+                'rect': pygame.Rect(
+                    WINDOWWIDTH,
+                    random.randint(WINDOWHEIGHT - 350, WINDOWHEIGHT - 150),
+                    platformWidth,
+                    platformHeight
+                ),
+                'surface': pygame.transform.scale(platformImage, (platformWidth, platformHeight))
+            }
+            platforms.append(newPlatform)
 
         # --- GRAVITÉ & COLLISIONS ---
         PLAYERYSPEED += GRAVITY
@@ -298,8 +298,6 @@ if platformAddCounter >= ADDNEWPLATFORMRATE:
             windowSurface.blit(b['surface'], b['rect'])
         pygame.draw.rect(windowSurface, (50, 200, 50), floor_rect)  # Sol permanent (vert)
         windowSurface.blit(playerImage, playerRect)
-        for p in particles:
-            pygame.draw.circle(windowSurface, (100, 150, 255), (int(p[0][0]), int(p[0][1])), int(p[2]))
 
         drawText(f'Score: {score}', font, windowSurface, 10, 0)
         drawText(f'Top Score: {topScore}', font, windowSurface, 10, 40)
