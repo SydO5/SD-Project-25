@@ -13,6 +13,41 @@ BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 6
 PLAYERMOVERATE = 5
 
+orbImage = pygame.image.load('orb.png')
+orbSize = 30
+orbs = []
+ADDNEWORBRATE = 400  # tous les X frames
+orbAddCounter = 0
+orbEffectTimer = 0
+# Ajouter une orbe de temps en temps
+orbAddCounter += 1
+if orbAddCounter >= ADDNEWORBRATE:
+    orbAddCounter = 0
+    newOrb = {
+        'rect': pygame.Rect(
+            random.randint(0, WINDOWWIDTH - orbSize),
+            random.randint(0, WINDOWHEIGHT - 200),
+            orbSize, orbSize
+        ),
+        'surface': pygame.transform.scale(orbImage, (orbSize, orbSize))
+    }
+    orbs.append(newOrb)
+for o in orbs[:]:
+    if playerRect.colliderect(o['rect']):
+        orbs.remove(o)
+        GRAVITY = 0.4        # gravité réduite
+        BADDIEMINSPEED = 2   # ennemis plus lents
+        BADDIEMAXSPEED = 4
+        orbEffectTimer = pygame.time.get_ticks()  # mémoriser le moment
+if orbEffectTimer and pygame.time.get_ticks() - orbEffectTimer > 5000:
+    GRAVITY = 1
+    BADDIEMINSPEED = 5
+    BADDIEMAXSPEED = 8
+    orbEffectTimer = 0
+for o in orbs:
+    windowSurface.blit(o['surface'], o['rect'])
+
+
 def terminate():
     pygame.quit()
     sys.exit()
