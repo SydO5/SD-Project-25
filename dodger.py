@@ -36,8 +36,8 @@ def waitForPlayerToPressKey():
 def playerHasHitBaddie(playerRect, baddies):
     for b in baddies:
         if playerRect.colliderect(b['rect']):
-            return True
-    return False
+            return b
+    return None
 
 def drawText(text, font, surface, x, y):
     textobj = font.render(text, 1, TEXTCOLOR)
@@ -94,6 +94,7 @@ while True:
     baddies = []
     baddieAddCounter = 0
     score = 0
+    lives = 3
     moveLeft = moveRight = False
     reverseCheat = slowCheat = False
     pygame.mixer.music.play(-1, 0.0)
@@ -202,6 +203,7 @@ while True:
         # Draw the score and top score.
         drawText('Score: %s' % (score), font, windowSurface, 10, 0)
         drawText('Top Score: %s' % (topScore), font, windowSurface, 10, 40)
+        drawText('Lives: %s' % (lives), font, windowSurface, 10, 80)
 
         # Draw the player's rectangle.
         windowSurface.blit(playerImage, playerRect)
@@ -213,10 +215,13 @@ while True:
         pygame.display.update()
 
         # Check if any of the baddies have hit the player.
-        if playerHasHitBaddie(playerRect, baddies):
-            if score > topScore:
-                topScore = score # set new top score
-            break
+        if playerHasHitBaddie(playerRect, baddies) is not None:
+            lives -= 1
+            baddies.remove(playerHasHitBaddie(playerRect, baddies))
+            if lives <= 0:
+                if score > topScore:
+                    topScore = score # set new top score
+                break
 
         mainClock.tick(FPS)
 
