@@ -8,11 +8,11 @@ BACKGROUNDIMAGE = pygame.image.load("back_printemps.png")
 FPS = 60
 
 PLAYERMOVERATE = 8
-JUMPPOWER = 20
+JUMPPOWER = 25
 GRAVITY = 1
 
-BADDIEMINSIZE = 10
-BADDIEMAXSIZE = 40
+BADDIEMINSIZE = 30
+BADDIEMAXSIZE = 50
 BADDIEMINSPEED = 5
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 30
@@ -74,6 +74,7 @@ pygame.mixer.music.load('background.mid')
 
 # Set up images.
 playerImage = pygame.image.load('player.png')
+playerImage = pygame.transform.scale(playerImage, (80, 80))
 playerRect = playerImage.get_rect()
 baddieImage = pygame.image.load('baddie.png')
 
