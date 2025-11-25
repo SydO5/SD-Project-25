@@ -219,6 +219,14 @@ while True:
         if playerHasHitBaddie(playerRect, baddies) is not None:
             lives -= 1
             baddies.remove(playerHasHitBaddie(playerRect, baddies))
+            
+            red_filter = pygame.Surface((WINDOWWIDTH, WINDOWHEIGHT))
+            red_filter.set_alpha(120)
+            red_filter.fill((255, 0, 0))
+            windowSurface.blit(red_filter, (0, 0))
+            pygame.display.update()
+            pygame.time.wait(25)
+
             if lives <= 0:
                 if score > topScore:
                     topScore = score # set new top score
