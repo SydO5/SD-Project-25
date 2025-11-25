@@ -5,6 +5,9 @@ from pygame.locals import *
 TEXTCOLOR = (0, 0, 0)
 BACKGROUNDCOLOR = (255, 255, 255)
 BACKGROUNDIMAGE = pygame.image.load("back_printemps.png")
+NEXTBACKGROUNDIMAGE = None
+BACKGROUND_ALPHA = 0
+BACKGROUND_FADE_SPEED = 60
 FPS = 60
 
 PLAYERMOVERATE = 8
@@ -65,6 +68,11 @@ backgrounds = {
     "hiver": pygame.transform.scale(pygame.image.load("back_hiver.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
 }
 
+# Create red filter for when player is hit
+red_filter = pygame.Surface((WINDOWWIDTH, WINDOWHEIGHT))
+red_filter.set_alpha(120)
+red_filter.fill((255, 0, 0))
+
 # Set up the fonts.
 font = pygame.font.SysFont(None, 48)
 
@@ -108,12 +116,21 @@ while True:
         # Change background (season) based on score
         if score == 1:
             BACKGROUNDIMAGE = backgrounds["printemps"]
-        if score == 500:
-            BACKGROUNDIMAGE = backgrounds["ete"]
-        if score == 1000:
-            BACKGROUNDIMAGE = backgrounds["automne"]
-        if score == 1500:
-            BACKGROUNDIMAGE = backgrounds["hiver"]
+        if score == 500 and NEXTBACKGROUNDIMAGE is None:
+            NEXTBACKGROUNDIMAGE = backgrounds["ete"]
+            fade_surface = NEXTBACKGROUNDIMAGE.copy()
+            fade_surface.set_alpha(0)
+            BACKGROUND_ALPHA = 0
+        if score == 1000 and NEXTBACKGROUNDIMAGE is None:
+            NEXTBACKGROUNDIMAGE = backgrounds["automne"]
+            fade_surface = NEXTBACKGROUNDIMAGE.copy()
+            fade_surface.set_alpha(0)
+            BACKGROUND_ALPHA = 0
+        if score == 1500 and NEXTBACKGROUNDIMAGE is None:
+            NEXTBACKGROUNDIMAGE = backgrounds["hiver"]
+            fade_surface = NEXTBACKGROUNDIMAGE.copy()
+            fade_surface.set_alpha(0)
+            BACKGROUND_ALPHA = 0
 
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -198,8 +215,20 @@ while True:
             if b['rect'].right < 0:
                 baddies.remove(b)
 
-        # Draw the game world on the window.
-        windowSurface.blit(BACKGROUNDIMAGE  , (0, 0))
+        # Draw the game world on the window.     
+        if NEXTBACKGROUNDIMAGE:
+            windowSurface.blit(BACKGROUNDIMAGE, (0, 0))
+
+            fade_surface.set_alpha(BACKGROUND_ALPHA)
+            windowSurface.blit(fade_surface, (0, 0))
+
+            BACKGROUND_ALPHA += BACKGROUND_FADE_SPEED
+            if BACKGROUND_ALPHA >= 255:
+                BACKGROUNDIMAGE = NEXTBACKGROUNDIMAGE
+                NEXTBACKGROUNDIMAGE = None
+                BACKGROUND_ALPHA = 0
+        else:
+            windowSurface.blit(BACKGROUNDIMAGE, (0, 0))
 
         # Draw the score and top score.
         drawText('Score: %s' % (score), font, windowSurface, 10, 0)
@@ -220,12 +249,10 @@ while True:
             lives -= 1
             baddies.remove(playerHasHitBaddie(playerRect, baddies))
             
-            red_filter = pygame.Surface((WINDOWWIDTH, WINDOWHEIGHT))
-            red_filter.set_alpha(120)
-            red_filter.fill((255, 0, 0))
+
             windowSurface.blit(red_filter, (0, 0))
             pygame.display.update()
-            pygame.time.wait(25)
+            pygame.time.wait(50)
 
             if lives <= 0:
                 if score > topScore:
