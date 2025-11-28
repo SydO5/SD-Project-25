@@ -4,19 +4,6 @@ from pygame.locals import *
 # ==============================
 # --- CONSTANTES GLOBALES ---
 # ==============================
-TEXTCOLOR = (0, 0, 0)
-BACKGROUNDCOLOR = (255, 255, 255)
-FPS = 60
-
-PLAYERMOVERATE = 8
-JUMPPOWER = 20
-GRAVITY = 1
-
-BADDIEMINSIZE = 10
-BADDIEMAXSIZE = 40
-BADDIEMINSPEED = 5
-BADDIEMAXSPEED = 8
-ADDNEWBADDIERATE = 30
 
 BLANC = (255, 255, 255)
 BLEU = (60, 130, 200)
@@ -50,198 +37,276 @@ class Bouton:
         texte_rect = texte_surface.get_rect(center=(self.x, self.y))
         ecran.blit(texte_surface, texte_rect)
 
+# Set up some constants.
+TEXTCOLOR = (0, 0, 0)
+BACKGROUNDCOLOR = (255, 255, 255)
+BACKGROUNDIMAGE = pygame.image.load("back_printemps.png")
+NEXTBACKGROUNDIMAGE = None
+BACKGROUND_ALPHA = 0
+BACKGROUND_FADE_SPEED = 60
+FPS = 60
 
-# ==============================
-# --- JEU DODGER ---
-# ==============================
-def jouer_dodger():
-    pygame.display.set_caption("Dodger")
+PLAYERMOVERATE = 8
+JUMPPOWER = 25
+GRAVITY = 1
 
-    windowSurface = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-    WINDOWWIDTH, WINDOWHEIGHT = windowSurface.get_size()
-    mainClock = pygame.time.Clock()
+BADDIEMINSIZE = 30
+BADDIEMAXSIZE = 50
+BADDIEMINSPEED = 5
+BADDIEMAXSPEED = 8
+ADDNEWBADDIERATE = 30
 
-    try:
-        BACKGROUNDIMAGE = pygame.image.load("back_printemps.png")
-    except:
-        BACKGROUNDIMAGE = pygame.Surface((WINDOWWIDTH, WINDOWHEIGHT))
-        BACKGROUNDIMAGE.fill((150, 220, 150))
 
-    BACKGROUNDIMAGE = pygame.transform.scale(BACKGROUNDIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
+#Set up functions.
+def terminate():
+    pygame.quit()
+    sys.exit()
 
-    backgrounds = {
-        "printemps": pygame.transform.scale(pygame.image.load("back_printemps.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
-        "ete": pygame.transform.scale(pygame.image.load("back_été.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
-        "automne": pygame.transform.scale(pygame.image.load("back_automne.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
-        "hiver": pygame.transform.scale(pygame.image.load("back_hiver.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
-    }
-
-    font = pygame.font.SysFont(None, 48)
-
-    try:
-        gameOverSound = pygame.mixer.Sound("gameover.wav")
-        pygame.mixer.music.load("background.mid")
-    except:
-        gameOverSound = None
-
-    playerImage = pygame.image.load("player.png")
-    playerRect = playerImage.get_rect()
-    baddieImage = pygame.image.load("baddie.png")
-
-    def drawText(text, font, surface, x, y):
-        textobj = font.render(text, True, TEXTCOLOR)
-        textrect = textobj.get_rect()
-        textrect.topleft = (x, y)
-        surface.blit(textobj, textrect)
-
-    def playerHasHitBaddie(playerRect, baddies):
-        for b in baddies:
-            if playerRect.colliderect(b["rect"]):
-                return True
-        return False
-
-    def waitForPlayerToPressKey():
-        while True:
-            for event in pygame.event.get():
-                if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
-                if event.type == KEYDOWN:
-                    if event.key == K_ESCAPE:
-                        return "menu"
-                    return "jouer"
-
-    # --- Écran de départ ---
-    windowSurface.fill(BACKGROUNDCOLOR)
-    drawText("Dodger", font, windowSurface, (WINDOWWIDTH / 2) - 100, (WINDOWHEIGHT / 2) - 50)
-    drawText("Appuie sur une touche pour commencer", font, windowSurface, (WINDOWWIDTH / 2) - 300, (WINDOWHEIGHT / 2))
-    pygame.display.update()
-    choix = waitForPlayerToPressKey()
-    if choix == "menu":
-        return
-
-    topScore = 0
+def waitForPlayerToPressKey():
     while True:
-        playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 50)
-        PLAYERYSPEED = 0
-        JUMPSLEFT = 2
-        GRAVITY = 1
-        baddies = []
-        baddieAddCounter = 0
-        score = 0
-        moveLeft = moveRight = False
-        reverseCheat = slowCheat = False
-        BACKGROUNDIMAGE = backgrounds["printemps"]
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                terminate()
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE: # Pressing ESC quits.
+                    terminate()
+                return
 
-        if gameOverSound:
-            pygame.mixer.music.play(-1, 0.0)
+def playerHasHitBaddie(playerRect, baddies):
+    for b in baddies:
+        if playerRect.colliderect(b['rect']):
+            return b
+    return None
 
-        while True:
-            score += 1
+def drawText(text, font, surface, x, y):
+    textobj = font.render(text, 1, TEXTCOLOR)
+    textrect = textobj.get_rect()
+    textrect.topleft = (x, y)
+    surface.blit(textobj, textrect)
 
-            if score == 500:
-                BACKGROUNDIMAGE = backgrounds["ete"]
-            if score == 1000:
-                BACKGROUNDIMAGE = backgrounds["automne"]
-            if score == 1500:
-                BACKGROUNDIMAGE = backgrounds["hiver"]
+# Set up pygame, the window, and the mouse cursor.
+pygame.init()
 
-            for event in pygame.event.get():
-                if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
-                if event.type == KEYDOWN:
-                    if event.key == K_ESCAPE:
-                        return
-                    if event.key == K_z:
-                        reverseCheat = True
-                    if event.key == K_x:
-                        slowCheat = True
-                    if event.key in [K_LEFT, K_a]:
-                        moveLeft = True
-                        moveRight = False
-                    if event.key in [K_RIGHT, K_d]:
-                        moveRight = True
-                        moveLeft = False
-                    if event.key in [K_DOWN, K_s]:
-                        GRAVITY = 3
-                    if event.key == K_SPACE and JUMPSLEFT > 0:
-                        PLAYERYSPEED = -JUMPPOWER
-                        JUMPSLEFT -= 1
-                if event.type == KEYUP:
-                    if event.key in [K_LEFT, K_a]:
-                        moveLeft = False
-                    if event.key in [K_RIGHT, K_d]:
-                        moveRight = False
-                    if event.key in [K_DOWN, K_s]:
-                        GRAVITY = 1
-                    if event.key in [K_z, K_x]:
-                        reverseCheat = slowCheat = False
-                        score = 0
+mainClock = pygame.time.Clock()
+windowSurface = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+WINDOWWIDTH, WINDOWHEIGHT = windowSurface.get_size()
+pygame.display.set_caption('Dodger')
+pygame.mouse.set_visible(False)
 
+# Scale the background image to fit the screen.
+BACKGROUNDIMAGE = pygame.transform.scale(BACKGROUNDIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
+
+#Make dictionnary with backgrounds adjusted to screen size
+backgrounds = {
+    "printemps": pygame.transform.scale(pygame.image.load("back_printemps.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "ete": pygame.transform.scale(pygame.image.load("back_été.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "automne": pygame.transform.scale(pygame.image.load("back_automne.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "hiver": pygame.transform.scale(pygame.image.load("back_hiver.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
+}
+
+# Create red filter for when player is hit
+red_filter = pygame.Surface((WINDOWWIDTH, WINDOWHEIGHT))
+red_filter.set_alpha(120)
+red_filter.fill((255, 0, 0))
+
+# Set up the fonts.
+font = pygame.font.SysFont(None, 48)
+
+# Set up sounds.
+gameOverSound = pygame.mixer.Sound('gameover.wav')
+pygame.mixer.music.load('background.mid')
+
+# Set up images.
+playerImage = pygame.image.load('player.png')
+playerImage = pygame.transform.scale(playerImage, (80, 80))
+playerRect = playerImage.get_rect()
+baddieImage = pygame.image.load('baddie.png')
+
+# Show the "Start" screen.
+windowSurface.fill(BACKGROUNDCOLOR)
+drawText('Dodger', font, windowSurface, (WINDOWWIDTH / 2) - 100, (WINDOWHEIGHT / 2) - 50)
+drawText('Press a key to start.', font, windowSurface, (WINDOWWIDTH / 2) - 200 , (WINDOWHEIGHT / 2) )
+pygame.display.update()
+waitForPlayerToPressKey()
+
+topScore = 0
+while True:
+    # Set up the start of the game.
+    playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 50)
+    PLAYERYSPEED = 0
+    JUMPSLEFT = 2
+    on_ground = False
+    baddies = []
+    baddieAddCounter = 0
+    score = 0
+    lives = 3
+    moveLeft = moveRight = False
+    reverseCheat = slowCheat = False
+    pygame.mixer.music.play(-1, 0.0)
+
+    
+
+    while True: # The game loop runs while the game part is playing.
+        score += 1 # Increase score.
+        
+        # Change background (season) based on score
+        if score == 1:
+            BACKGROUNDIMAGE = backgrounds["printemps"]
+        if score == 500 and NEXTBACKGROUNDIMAGE is None:
+            NEXTBACKGROUNDIMAGE = backgrounds["ete"]
+            fade_surface = NEXTBACKGROUNDIMAGE.copy()
+            fade_surface.set_alpha(0)
+            BACKGROUND_ALPHA = 0
+        if score == 1000 and NEXTBACKGROUNDIMAGE is None:
+            NEXTBACKGROUNDIMAGE = backgrounds["automne"]
+            fade_surface = NEXTBACKGROUNDIMAGE.copy()
+            fade_surface.set_alpha(0)
+            BACKGROUND_ALPHA = 0
+        if score == 1500 and NEXTBACKGROUNDIMAGE is None:
+            NEXTBACKGROUNDIMAGE = backgrounds["hiver"]
+            fade_surface = NEXTBACKGROUNDIMAGE.copy()
+            fade_surface.set_alpha(0)
+            BACKGROUND_ALPHA = 0
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                terminate()
+
+            if event.type == KEYDOWN:
+                if event.key == K_z:
+                    reverseCheat = True
+                if event.key == K_x:
+                    slowCheat = True
+                if event.key == K_LEFT or event.key == K_a:
+                    moveRight = False
+                    moveLeft = True
+                if event.key == K_RIGHT or event.key == K_d:
+                    moveLeft = False
+                    moveRight = True
+                if event.key == K_DOWN or event.key == K_s:
+                    GRAVITY = 3
+                if event.key == K_SPACE and JUMPSLEFT > 0:
+                    PLAYERYSPEED = -JUMPPOWER
+                    JUMPSLEFT -= 1
+
+            if event.type == KEYUP:
+                if event.key == K_z:
+                    reverseCheat = False
+                    score = 0
+                if event.key == K_x:
+                    slowCheat = False
+                    score = 0
+                if event.key == K_ESCAPE:
+                        terminate()
+
+                if event.key == K_LEFT or event.key == K_a:
+                    moveLeft = False
+                if event.key == K_RIGHT or event.key == K_d:
+                    moveRight = False
+                if event.key == K_DOWN or event.key == K_s:
+                    GRAVITY = 1
+
+        # Add new baddies at the left of the screen, if needed.
+        if not reverseCheat and not slowCheat:
+            baddieAddCounter += 1
+        if baddieAddCounter == ADDNEWBADDIERATE:
+            baddieAddCounter = 0
+            baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
+            newBaddie = {'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - baddieSize), baddieSize, baddieSize),
+                        'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
+                        'surface':pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
+                        }
+
+            baddies.append(newBaddie)
+
+
+        # Apply gravity to the player.
+        PLAYERYSPEED += GRAVITY
+        playerRect.y += PLAYERYSPEED
+
+        #So player can't fall below the floor.
+        if playerRect.bottom >= WINDOWHEIGHT:
+            playerRect.bottom = WINDOWHEIGHT
+            PLAYERYSPEED = 0
+            on_ground = True
+            JUMPSLEFT = 2
+
+        # Move the player around.
+        if moveLeft and playerRect.left > 0:
+            playerRect.move_ip(-1 * PLAYERMOVERATE, 0)
+        if moveRight and playerRect.right < WINDOWWIDTH:
+            playerRect.move_ip(PLAYERMOVERATE, 0)
+
+        # Move the baddies to the left.
+        for b in baddies:
             if not reverseCheat and not slowCheat:
-                baddieAddCounter += 1
-            if baddieAddCounter == ADDNEWBADDIERATE:
-                baddieAddCounter = 0
-                baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
-                newBaddie = {
-                    "rect": pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - baddieSize), baddieSize, baddieSize),
-                    "speed": random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
-                    "surface": pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
-                }
-                baddies.append(newBaddie)
+                b['rect'].move_ip(-b['speed'],0)
+            elif reverseCheat:
+                b['rect'].move_ip(5, 0)
+            elif slowCheat:
+                b['rect'].move_ip(-1, 0)
 
-            PLAYERYSPEED += GRAVITY
-            playerRect.y += PLAYERYSPEED
+        # Delete baddies that have gone past the left of the screen.
+        for b in baddies[:]:
+            if b['rect'].right < 0:
+                baddies.remove(b)
 
-            if playerRect.bottom >= WINDOWHEIGHT:
-                playerRect.bottom = WINDOWHEIGHT
-                PLAYERYSPEED = 0
-                JUMPSLEFT = 2
-
-            if moveLeft and playerRect.left > 0:
-                playerRect.move_ip(-PLAYERMOVERATE, 0)
-            if moveRight and playerRect.right < WINDOWWIDTH:
-                playerRect.move_ip(PLAYERMOVERATE, 0)
-
-            for b in baddies:
-                if not reverseCheat and not slowCheat:
-                    b["rect"].move_ip(-b["speed"], 0)
-                elif reverseCheat:
-                    b["rect"].move_ip(5, 0)
-                elif slowCheat:
-                    b["rect"].move_ip(-1, 0)
-            baddies = [b for b in baddies if b["rect"].right > 0]
-
+        # Draw the game world on the window.     
+        if NEXTBACKGROUNDIMAGE:
             windowSurface.blit(BACKGROUNDIMAGE, (0, 0))
-            drawText(f"Score: {score}", font, windowSurface, 10, 0)
-            drawText(f"Top Score: {topScore}", font, windowSurface, 10, 40)
-            windowSurface.blit(playerImage, playerRect)
-            for b in baddies:
-                windowSurface.blit(b["surface"], b["rect"])
-            pygame.display.update()
 
-            if playerHasHitBaddie(playerRect, baddies):
-                if score > topScore:
-                    topScore = score
-                break
+            fade_surface.set_alpha(BACKGROUND_ALPHA)
+            windowSurface.blit(fade_surface, (0, 0))
 
-            mainClock.tick(FPS)
+            BACKGROUND_ALPHA += BACKGROUND_FADE_SPEED
+            if BACKGROUND_ALPHA >= 255:
+                BACKGROUNDIMAGE = NEXTBACKGROUNDIMAGE
+                NEXTBACKGROUNDIMAGE = None
+                BACKGROUND_ALPHA = 0
+        else:
+            windowSurface.blit(BACKGROUNDIMAGE, (0, 0))
 
-        if gameOverSound:
-            pygame.mixer.music.stop()
-            gameOverSound.play()
+        # Draw the score and top score.
+        drawText('Score: %s' % (score), font, windowSurface, 10, 0)
+        drawText('Top Score: %s' % (topScore), font, windowSurface, 10, 40)
+        drawText('Lives: %s' % (lives), font, windowSurface, 10, 80)
 
-        drawText("GAME OVER", font, windowSurface, (WINDOWWIDTH / 2) - 150, (WINDOWHEIGHT / 2) - 50)
-        drawText("Appuie sur une touche pour rejouer (ESC pour menu)", font, windowSurface, (WINDOWWIDTH / 2) - 350, (WINDOWHEIGHT / 2))
+        # Draw the player's rectangle.
+        windowSurface.blit(playerImage, playerRect)
+
+        # Draw each baddie.
+        for b in baddies:
+            windowSurface.blit(b['surface'], b['rect'])
+
         pygame.display.update()
 
-        choix = waitForPlayerToPressKey()
-        if choix == "menu":
-            return
-        if gameOverSound:
-            gameOverSound.stop()
+        # Check if any of the baddies have hit the player.
+        if playerHasHitBaddie(playerRect, baddies) is not None:
+            lives -= 1
+            baddies.remove(playerHasHitBaddie(playerRect, baddies))
+            
 
+            windowSurface.blit(red_filter, (0, 0))
+            pygame.display.update()
+            pygame.time.wait(50)
+
+            if lives <= 0:
+                if score > topScore:
+                    topScore = score # set new top score
+                break
+
+        mainClock.tick(FPS)
+
+    # Stop the game and show the "Game Over" screen.
+    pygame.mixer.music.stop()
+    gameOverSound.play()
+
+    drawText('GAME OVER', font, windowSurface, (WINDOWWIDTH / 2) - 150, (WINDOWHEIGHT / 2) - 50)
+    drawText('Press a key to play again.', font, windowSurface, (WINDOWWIDTH / 2) - 250, (WINDOWHEIGHT / 2))
+    pygame.display.update()
+    waitForPlayerToPressKey()
+
+    gameOverSound.stop()
 
 # ==============================
 # --- MENU PRINCIPAL ---
