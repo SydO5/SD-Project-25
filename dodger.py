@@ -340,6 +340,7 @@ while True:
     windowSurface.blit(GAMEOVER_BACKGROUND, (0, 0))
     drawText('GAME OVER', menu_title_font, windowSurface, (WINDOWWIDTH/6), 100, (0, 0, 0))   
     drawText('Press a key if you dare to play again.', font, windowSurface, (WINDOWWIDTH/4), (WINDOWHEIGHT / 2), color = (255, 255, 255))
+    drawText('If you are not brave enough press ESC.', font, windowSurface, (WINDOWWIDTH/4), (WINDOWHEIGHT/1.5), color = (255, 255, 255))
     pygame.display.update()
     waitForPlayerToPressKey()
 
