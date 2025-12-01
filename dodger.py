@@ -32,8 +32,8 @@ def waitForPlayerToPressKey():
             if event.type == QUIT:
                 terminate()
             if event.type == KEYDOWN:
-                if event.key == K_ESCAPE: # Pressing ESC quits.
-                    terminate()
+                if event.key == K_ESCAPE:
+                    MainMenu()
                 return
 
 def playerHasHitBaddie(playerRect, baddies):
@@ -42,11 +42,63 @@ def playerHasHitBaddie(playerRect, baddies):
             return b
     return None
 
-def drawText(text, font, surface, x, y):
-    textobj = font.render(text, 1, TEXTCOLOR)
+def drawText(text, font, surface, x, y, color = TEXTCOLOR):
+    textobj = font.render(text, 1, color)
     textrect = textobj.get_rect()
     textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
+
+# Set up button class.
+class Button:
+    def __init__(self, text, x, y, font):
+        self.text = text
+        self.x = x
+        self.y = y
+        self.font = font
+    
+    def draw(self, surface, color, hover_color = None, hover=False):
+        if hover and hover_color is not None:
+            color = hover_color
+        else:
+            color = color
+        render = self.font.render(self.text, True, color)
+        rect = render.get_rect(center = (self.x, self.y))
+        surface.blit(render, rect)
+        return rect
+
+# Create main menu with start and quit button.
+def MainMenu():
+    while True:
+        pygame.mouse.set_visible(True)
+
+        windowSurface.blit(MENU_BACKGROUND, (0,0))
+        drawText('Season Escape', menu_title_font, windowSurface, (WINDOWWIDTH/300), 0, (254, 237, 181))
+        
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        play_button = Button("Play", WINDOWWIDTH//2, int(WINDOWHEIGHT*0.45), menu_button_font)
+        quit_button = Button("Quit", WINDOWWIDTH//2, int(WINDOWHEIGHT*0.9), menu_button_font)
+        
+        rect_play_normal = play_button.draw(windowSurface, (60,42,83))
+        rect_quit_normal = quit_button.draw(windowSurface, (254, 237, 181))
+
+        hover_play = rect_play_normal.collidepoint(mouse_x, mouse_y)
+        hover_quit = rect_quit_normal.collidepoint(mouse_x, mouse_y)
+
+        rect_play = play_button.draw(windowSurface, (60,42,83), (204,99,104), hover_play)
+        rect_quit = quit_button.draw(windowSurface, (254, 237, 181), (204,99,104), hover_quit)
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                terminate()
+            if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                if rect_play.collidepoint(mouse_x, mouse_y):
+                    return
+                if rect_quit.collidepoint(mouse_x, mouse_y):
+                    terminate()
+
+        pygame.display.update()
+        mainClock.tick(60)
 
 # Set up pygame, the window, and the mouse cursor.
 pygame.init()
@@ -55,7 +107,9 @@ mainClock = pygame.time.Clock()
 windowSurface = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
 WINDOWWIDTH, WINDOWHEIGHT = windowSurface.get_size()
 pygame.display.set_caption('Dodger')
-pygame.mouse.set_visible(False)
+
+# Set up the background image for the menu.
+MENU_BACKGROUND = pygame.transform.scale(pygame.image.load("back_menu.png"), (WINDOWWIDTH, WINDOWHEIGHT))
 
 # Scale the background image to fit the screen.
 BACKGROUNDIMAGE = pygame.transform.scale(BACKGROUNDIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
@@ -75,6 +129,8 @@ red_filter.fill((255, 0, 0))
 
 # Set up the fonts.
 font = pygame.font.SysFont(None, 48)
+menu_title_font = pygame.font.Font("8bit_font.ttf", 300)
+menu_button_font = pygame.font.Font("8bit_font.ttf", 150)
 
 # Set up sounds.
 gameOverSound = pygame.mixer.Sound('gameover.wav')
@@ -88,15 +144,12 @@ playerRect = playerImage.get_rect()
 baddieImage = pygame.image.load('baddie.png')
 
 # Show the "Start" screen.
-windowSurface.fill(BACKGROUNDCOLOR)
-drawText('Dodger', font, windowSurface, (WINDOWWIDTH / 2) - 100, (WINDOWHEIGHT / 2) - 50)
-drawText('Press a key to start.', font, windowSurface, (WINDOWWIDTH / 2) - 200 , (WINDOWHEIGHT / 2) )
-pygame.display.update()
-waitForPlayerToPressKey()
+MainMenu()
 
 topScore = 0
 while True:
     # Set up the start of the game.
+    pygame.mouse.set_visible(False)
     playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 50)
     PLAYERYSPEED = 0
     JUMPSLEFT = 2
@@ -162,7 +215,7 @@ while True:
                     slowCheat = False
                     score = 0
                 if event.key == K_ESCAPE:
-                        terminate()
+                        MainMenu()
 
                 if event.key == K_LEFT or event.key == K_a:
                     moveLeft = False
