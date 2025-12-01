@@ -143,9 +143,10 @@ red_filter.set_alpha(120)
 red_filter.fill((255, 0, 0))
 
 # Set up the fonts.
-font = pygame.font.SysFont(None, 48)
+font = pygame.font.Font("8bit_font.ttf", 48)
 menu_title_font = pygame.font.Font("8bit_font.ttf", 300)
 menu_button_font = pygame.font.Font("8bit_font.ttf", 150)
+
 
 # Set up sounds.
 gameOverSound = pygame.mixer.Sound('gameover.wav')
@@ -337,7 +338,8 @@ while True:
     gameOverSound.play()
 
     windowSurface.blit(GAMEOVER_BACKGROUND, (0, 0))
-    drawText('Press a key to play again.', font, windowSurface, (WINDOWWIDTH / 2) - 250, (WINDOWHEIGHT / 2), color = (255, 255, 255))
+    drawText('GAME OVER', menu_title_font, windowSurface, (WINDOWWIDTH/6), 100, (0, 0, 0))   
+    drawText('Press a key if you dare to play again.', font, windowSurface, (WINDOWWIDTH/4), (WINDOWHEIGHT / 2), color = (255, 255, 255))
     pygame.display.update()
     waitForPlayerToPressKey()
 
