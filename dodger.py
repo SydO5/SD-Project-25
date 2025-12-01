@@ -123,6 +123,9 @@ pygame.display.set_caption('Dodger')
 # Set up the background image for the menu.
 MENU_BACKGROUND = pygame.transform.scale(pygame.image.load("back_menu.png"), (WINDOWWIDTH, WINDOWHEIGHT))
 
+#Set up the background image for gameover.
+GAMEOVER_BACKGROUND = pygame.transform.scale(pygame.image.load("back_gameover.png"), (WINDOWWIDTH, WINDOWHEIGHT))
+
 # Scale the background image to fit the screen.
 BACKGROUNDIMAGE = pygame.transform.scale(BACKGROUNDIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
 
@@ -333,8 +336,8 @@ while True:
     pygame.mixer.music.stop()
     gameOverSound.play()
 
-    drawText('GAME OVER', font, windowSurface, (WINDOWWIDTH / 2) - 150, (WINDOWHEIGHT / 2) - 50)
-    drawText('Press a key to play again.', font, windowSurface, (WINDOWWIDTH / 2) - 250, (WINDOWHEIGHT / 2))
+    windowSurface.blit(GAMEOVER_BACKGROUND, (0, 0))
+    drawText('Press a key to play again.', font, windowSurface, (WINDOWWIDTH / 2) - 250, (WINDOWHEIGHT / 2), color = (255, 255, 255))
     pygame.display.update()
     waitForPlayerToPressKey()
 
