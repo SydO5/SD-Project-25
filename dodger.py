@@ -79,6 +79,7 @@ font = pygame.font.SysFont(None, 48)
 # Set up sounds.
 gameOverSound = pygame.mixer.Sound('gameover.wav')
 pygame.mixer.music.load('background.mid')
+hit_sound = pygame.mixer.Sound('hit.mp3')
 
 # Set up images.
 playerImage = pygame.image.load('player.png')
@@ -248,8 +249,8 @@ while True:
         if playerHasHitBaddie(playerRect, baddies) is not None:
             lives -= 1
             baddies.remove(playerHasHitBaddie(playerRect, baddies))
-            
-
+            hit_sound.play()
+    
             windowSurface.blit(red_filter, (0, 0))
             pygame.display.update()
             pygame.time.wait(50)
