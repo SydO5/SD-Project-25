@@ -82,8 +82,8 @@ pygame.mixer.music.load('background.mid')
 hit_sound = pygame.mixer.Sound('hit.mp3')
 
 # Set up images.
-playerImage = pygame.image.load('player.png')
-playerImage = pygame.transform.scale(playerImage, (80, 80))
+playerImage = pygame.image.load('ninja_run.png')
+playerImage = pygame.transform.scale(playerImage, (110, (110*7/5) ))
 playerRect = playerImage.get_rect()
 baddieImage = pygame.image.load('baddie.png')
 
