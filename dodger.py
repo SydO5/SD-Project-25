@@ -56,7 +56,7 @@ class Button:
         self.y = y
         self.font = font
     
-    def draw(self, surface, color, hover_color = None, hover=False):
+    def draw(self, surface, color, hover_color = None, hover = False):
         if hover and hover_color is not None:
             color = hover_color
         else:
@@ -68,6 +68,9 @@ class Button:
 
 # Create main menu with start and quit button.
 def MainMenu():
+    hovered_play = False
+    hovered_quit = False
+
     while True:
         pygame.mouse.set_visible(True)
 
@@ -85,6 +88,14 @@ def MainMenu():
         hover_play = rect_play_normal.collidepoint(mouse_x, mouse_y)
         hover_quit = rect_quit_normal.collidepoint(mouse_x, mouse_y)
 
+        if hover_play and not hovered_play:
+            hover_sound_menu.play()
+        if hover_quit and not hovered_quit:
+            hover_sound_menu.play()
+        
+        hovered_play = hover_play
+        hovered_quit = hover_quit
+
         rect_play = play_button.draw(windowSurface, (60,42,83), (204,99,104), hover_play)
         rect_quit = quit_button.draw(windowSurface, (254, 237, 181), (204,99,104), hover_quit)
 
@@ -93,6 +104,7 @@ def MainMenu():
                 terminate()
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 if rect_play.collidepoint(mouse_x, mouse_y):
+                    click_sound_menu.play()
                     return
                 if rect_quit.collidepoint(mouse_x, mouse_y):
                     terminate()
@@ -136,6 +148,8 @@ menu_button_font = pygame.font.Font("8bit_font.ttf", 150)
 gameOverSound = pygame.mixer.Sound('gameover.wav')
 pygame.mixer.music.load('background.mid')
 hit_sound = pygame.mixer.Sound('hit.mp3')
+click_sound_menu = pygame.mixer.Sound('click_menu.mp3')
+hover_sound_menu = pygame.mixer.Sound('hover_sound.mp3')
 
 # Set up images.
 playerImage = pygame.image.load('ninja_run.png')
