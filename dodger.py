@@ -160,8 +160,10 @@ click_sound_menu = pygame.mixer.Sound('click_menu.mp3')
 hover_sound_menu = pygame.mixer.Sound('hover_sound.mp3')
 
 # Set up images.
-playerImage = pygame.image.load('ninja_run.png')
-playerImage = pygame.transform.scale(playerImage, (110, (110*7/5) ))
+playerImages = {"run" : pygame.transform.scale(pygame.image.load('ninja_run.png'), (110, (110*7/5) )),
+               "jump" : pygame.transform.scale(pygame.image.load('ninja_jump.png'), (110, (110*7/5) )),
+               "stoic": pygame.transform.scale(pygame.image.load('ninja_stoic.png'), (110, (110*7/5) ))}
+playerImage = playerImages["stoic"]
 playerRect = playerImage.get_rect()
 baddieImage = pygame.image.load('baddie.png')
 
@@ -220,14 +222,17 @@ while True:
                 if event.key == K_LEFT or event.key == K_a:
                     moveRight = False
                     moveLeft = True
+                    playerImage = playerImages["run"]
                 if event.key == K_RIGHT or event.key == K_d:
                     moveLeft = False
                     moveRight = True
+                    playerImage = playerImages["run"]
                 if event.key == K_DOWN or event.key == K_s:
                     GRAVITY = 3
                 if event.key == K_SPACE and JUMPSLEFT > 0:
                     PLAYERYSPEED = -JUMPPOWER
                     JUMPSLEFT -= 1
+                    playerImage = playerImages["jump"]
 
             if event.type == KEYUP:
                 if event.key == K_z:
@@ -244,10 +249,14 @@ while True:
 
                 if event.key == K_LEFT or event.key == K_a:
                     moveLeft = False
+                    playerImage = playerImages["stoic"]
                 if event.key == K_RIGHT or event.key == K_d:
                     moveRight = False
+                    playerImage = playerImages["stoic"]
                 if event.key == K_DOWN or event.key == K_s:
                     GRAVITY = 1
+                if event.key == K_SPACE and on_ground:
+                    playerImage = playerImages["stoic"]
 
         # Add new baddies at the left of the screen, if needed.
         if not reverseCheat and not slowCheat:
