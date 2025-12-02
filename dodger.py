@@ -13,6 +13,7 @@ FPS = 60
 PLAYERMOVERATE = 8
 JUMPPOWER = 25
 GRAVITY = 1
+PLAYERHEIGHT = 150
 
 BADDIEMINSIZE = 30
 BADDIEMAXSIZE = 50
@@ -50,6 +51,14 @@ def drawText(text, font, surface, x, y, color = TEXTCOLOR):
     textrect = textobj.get_rect()
     textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
+
+
+def scale_proportionally(image, PLAYERHEIGHT):
+    width, height = image.get_size()
+    scale_factor = PLAYERHEIGHT / height
+    new_width = int(width * scale_factor)
+    new_height = int(height * scale_factor)
+    return pygame.transform.scale(image, (new_width, new_height))
 
 # Set up button class.
 class Button:
@@ -160,9 +169,12 @@ click_sound_menu = pygame.mixer.Sound('click_menu.mp3')
 hover_sound_menu = pygame.mixer.Sound('hover_sound.mp3')
 
 # Set up images.
-playerImages = {"run" : pygame.transform.scale(pygame.image.load('ninja_run.png'), (110, (110*7/5) )),
-               "jump" : pygame.transform.scale(pygame.image.load('ninja_jump.png'), (110, (110*7/5) )),
-               "stoic": pygame.transform.scale(pygame.image.load('ninja_stoic.png'), (110, (110*7/5) ))}
+playerImages = {"run_right" : scale_proportionally(pygame.image.load('ninja_run_right.png'), PLAYERHEIGHT),
+                "run_left" : scale_proportionally(pygame.image.load('ninja_run_left.png'), PLAYERHEIGHT),
+               "jump_right" : scale_proportionally(pygame.image.load('ninja_jump_right.png'), PLAYERHEIGHT),
+               "jump_left" : scale_proportionally(pygame.image.load('ninja_jump_left.png'), PLAYERHEIGHT),
+               "stoic": scale_proportionally(pygame.image.load('ninja_stoic.png'), PLAYERHEIGHT)}
+
 playerImage = playerImages["stoic"]
 playerRect = playerImage.get_rect()
 baddieImage = pygame.image.load('baddie.png')
@@ -222,17 +234,17 @@ while True:
                 if event.key == K_LEFT or event.key == K_a:
                     moveRight = False
                     moveLeft = True
-                    playerImage = playerImages["run"]
+                    playerImage = playerImages["run_left"]
                 if event.key == K_RIGHT or event.key == K_d:
                     moveLeft = False
                     moveRight = True
-                    playerImage = playerImages["run"]
+                    playerImage = playerImages["run_right"]
                 if event.key == K_DOWN or event.key == K_s:
                     GRAVITY = 3
                 if event.key == K_SPACE and JUMPSLEFT > 0:
                     PLAYERYSPEED = -JUMPPOWER
                     JUMPSLEFT -= 1
-                    playerImage = playerImages["jump"]
+                    on_ground = False
 
             if event.type == KEYUP:
                 if event.key == K_z:
@@ -249,14 +261,27 @@ while True:
 
                 if event.key == K_LEFT or event.key == K_a:
                     moveLeft = False
-                    playerImage = playerImages["stoic"]
                 if event.key == K_RIGHT or event.key == K_d:
                     moveRight = False
-                    playerImage = playerImages["stoic"]
                 if event.key == K_DOWN or event.key == K_s:
                     GRAVITY = 1
-                if event.key == K_SPACE and on_ground:
-                    playerImage = playerImages["stoic"]
+
+        #Change play image based on movement and jumping
+        # Choisir l'image du joueur selon mouvement et saut
+        if not on_ground:
+            if moveLeft:
+                playerImage = playerImages["jump_left"]
+            elif moveRight:
+                playerImage = playerImages["jump_right"]
+            else:
+                playerImage = playerImages["jump_right"]
+        else:
+            if moveLeft:
+                playerImage = playerImages["run_left"]
+            elif moveRight:
+                playerImage = playerImages["run_right"]
+            else:
+                playerImage = playerImages["stoic"]
 
         # Add new baddies at the left of the screen, if needed.
         if not reverseCheat and not slowCheat:
