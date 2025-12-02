@@ -108,6 +108,7 @@ def MainMenu():
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 if rect_play.collidepoint(mouse_x, mouse_y):
                     click_sound_menu.play()
+                    pygame.mouse.set_visible(False)
                     return
                 if rect_quit.collidepoint(mouse_x, mouse_y):
                     terminate()
@@ -170,11 +171,11 @@ MainMenu()
 topScore = 0
 while True:
     # Set up the start of the game.
-    pygame.mouse.set_visible(False)
     playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 50)
     PLAYERYSPEED = 0
     JUMPSLEFT = 2
     on_ground = False
+    quit_to_menu = False
     baddies = []
     baddieAddCounter = 0
     score = 0
@@ -236,7 +237,11 @@ while True:
                     slowCheat = False
                     score = 0
                 if event.key == K_ESCAPE:
-                        MainMenu()
+                    click_sound_menu.play()
+                    MainMenu()
+                    quit_to_menu = True
+                    break
+                    
 
                 if event.key == K_LEFT or event.key == K_a:
                     moveLeft = False
@@ -335,6 +340,11 @@ while True:
                 break
 
         mainClock.tick(FPS)
+
+        if quit_to_menu:
+            pygame.mixer.music.stop()
+            MainMenu()
+            break
 
     # Stop the game and show the "Game Over" screen.
     pygame.mixer.music.stop()
