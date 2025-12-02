@@ -238,7 +238,6 @@ while True:
                     score = 0
                 if event.key == K_ESCAPE:
                     click_sound_menu.play()
-                    MainMenu()
                     quit_to_menu = True
                     break
                     
@@ -340,25 +339,28 @@ while True:
                 break
 
         mainClock.tick(FPS)
-
+        
         if quit_to_menu:
-            pygame.mixer.music.stop()
-            MainMenu()
             break
 
     # Stop the game and show the "Game Over" screen.
-    pygame.mixer.music.stop()
-    gameOverSound.play()
+    if quit_to_menu:
+            pygame.mixer.music.stop()
+            MainMenu()
+            continue
+    elif quit_to_menu == False:
+        pygame.mixer.music.stop()
+        gameOverSound.play()
 
-    windowSurface.blit(GAMEOVER_BACKGROUND, (0, 0))
-    drawText('GAME OVER', menu_title_font, windowSurface, (WINDOWWIDTH/6.5), 100, (0, 0, 0))   
-    drawText('Enter if you dare to play again...', font, windowSurface, (WINDOWWIDTH/3.5), (WINDOWHEIGHT / 2), color = (255, 255, 255))
-    drawText('If you are not brave enough escape...', font, windowSurface, (WINDOWWIDTH/3.75), (WINDOWHEIGHT/1.5), color = (255, 255, 255))
-    pygame.display.update()
+        windowSurface.blit(GAMEOVER_BACKGROUND, (0, 0))
+        drawText('GAME OVER', menu_title_font, windowSurface, (WINDOWWIDTH/6.5), 100, (0, 0, 0))   
+        drawText('Enter if you dare to play again...', font, windowSurface, (WINDOWWIDTH/3.5), (WINDOWHEIGHT / 2), color = (255, 255, 255))
+        drawText('If you are not brave enough escape...', font, windowSurface, (WINDOWWIDTH/3.75), (WINDOWHEIGHT/1.5), color = (255, 255, 255))
+        pygame.display.update()
     
-    result = waitForPlayerToPressKey()
-    gameOverSound.stop()
-    if result == "menu":
-        MainMenu()
+        result = waitForPlayerToPressKey()
+        gameOverSound.stop()
+        if result == "menu":
+            MainMenu()
+            continue
         continue
-    continue
