@@ -34,7 +34,8 @@ def waitForPlayerToPressKey():
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     MainMenu()
-                return
+                if event.key == K_RETURN:
+                    return
 
 def playerHasHitBaddie(playerRect, baddies):
     for b in baddies:
@@ -338,9 +339,9 @@ while True:
     gameOverSound.play()
 
     windowSurface.blit(GAMEOVER_BACKGROUND, (0, 0))
-    drawText('GAME OVER', menu_title_font, windowSurface, (WINDOWWIDTH/6), 100, (0, 0, 0))   
-    drawText('Press a key if you dare to play again.', font, windowSurface, (WINDOWWIDTH/4), (WINDOWHEIGHT / 2), color = (255, 255, 255))
-    drawText('If you are not brave enough press ESC.', font, windowSurface, (WINDOWWIDTH/4), (WINDOWHEIGHT/1.5), color = (255, 255, 255))
+    drawText('GAME OVER', menu_title_font, windowSurface, (WINDOWWIDTH/6.5), 100, (0, 0, 0))   
+    drawText('Enter if you dare to play again...', font, windowSurface, (WINDOWWIDTH/3.5), (WINDOWHEIGHT / 2), color = (255, 255, 255))
+    drawText('If you are not brave enough escape...', font, windowSurface, (WINDOWWIDTH/3.75), (WINDOWHEIGHT/1.5), color = (255, 255, 255))
     pygame.display.update()
     waitForPlayerToPressKey()
 
