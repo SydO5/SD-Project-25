@@ -169,11 +169,25 @@ click_sound_menu = pygame.mixer.Sound('click_menu.mp3')
 hover_sound_menu = pygame.mixer.Sound('hover_sound.mp3')
 
 # Set up images.
-playerImages = {"run_right" : scale_proportionally(pygame.image.load('ninja_run_right.png'), PLAYERHEIGHT),
+NinjaImages = {"run_right" : scale_proportionally(pygame.image.load('ninja_run_right.png'), PLAYERHEIGHT),
                 "run_left" : scale_proportionally(pygame.image.load('ninja_run_left.png'), PLAYERHEIGHT),
                "jump_right" : scale_proportionally(pygame.image.load('ninja_jump_right.png'), PLAYERHEIGHT),
                "jump_left" : scale_proportionally(pygame.image.load('ninja_jump_left.png'), PLAYERHEIGHT),
                "stoic": scale_proportionally(pygame.image.load('ninja_stoic.png'), PLAYERHEIGHT)}
+
+AdventurerImages = {"run_right" : scale_proportionally(pygame.image.load('adventurer_run_right.png'), PLAYERHEIGHT),
+                "run_left" : scale_proportionally(pygame.image.load('adventurer_run_left.png'), PLAYERHEIGHT),
+               "jump_right" : scale_proportionally(pygame.image.load('adventurer_jump_right.png'), PLAYERHEIGHT),
+               "jump_left" : scale_proportionally(pygame.image.load('adventurer_jump_left.png'), PLAYERHEIGHT),
+               "stoic": scale_proportionally(pygame.image.load('adventurer_stoic.png'), PLAYERHEIGHT)}
+
+KnightImages = {"run_right" : scale_proportionally(pygame.image.load('knight_run_right.png'), PLAYERHEIGHT),
+                "run_left" : scale_proportionally(pygame.image.load('knight_run_left.png'), PLAYERHEIGHT),
+               "jump_right" : scale_proportionally(pygame.image.load('knight_jump_right.png'), PLAYERHEIGHT),
+               "jump_left" : scale_proportionally(pygame.image.load('knight_jump_left.png'), PLAYERHEIGHT),
+               "stoic": scale_proportionally(pygame.image.load('knight_stoic.png'), PLAYERHEIGHT)}
+
+playerImages = NinjaImages
 
 playerImage = playerImages["stoic"]
 playerRect = playerImage.get_rect()
