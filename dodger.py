@@ -70,6 +70,13 @@ def scale_proportionally(image, PLAYERHEIGHT):
     new_width = int(width * scale_factor)
     new_height = int(height * scale_factor)
     return pygame.transform.scale(image, (new_width, new_height))
+# Music menu.
+def playMenuMusic():
+    pygame.mixer.music.load('music_menu.wav')
+    pygame.mixer.music.set_volume(MUSICVOLUME)
+    pygame.mixer.music.play(-1, 0.0, fade_ms = 1000)
+def stopMenuMusic():
+    pygame.mixer.music.stop()
 
 # Set up button class.
 class Button:
@@ -91,6 +98,7 @@ class Button:
 
 # Create main menu with play, character selection, settings and quit buttons.
 def MainMenu():
+    playMenuMusic()
     hovered_play = False
     hovered_select = False
     hovered_settings = False
@@ -400,7 +408,6 @@ season_colors = {"Spring": (9,101,76),
 
 # Set up sounds.
 gameOverSound = pygame.mixer.Sound('gameover.mp3')
-pygame.mixer.music.load('background.mid')
 hit_sound = pygame.mixer.Sound('hit.mp3')
 click_sound_menu = pygame.mixer.Sound('click_menu.mp3')
 hover_sound_menu = pygame.mixer.Sound('hover_sound.mp3')
@@ -456,6 +463,8 @@ while True:
     lives = 3
     moveLeft = moveRight = False
     reverseCheat = slowCheat = False
+    stopMenuMusic()
+    pygame.mixer.music.load('music_game.wav')
     pygame.mixer.music.play(-1, 0.0)
 
     
