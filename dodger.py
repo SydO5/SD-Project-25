@@ -1,7 +1,7 @@
 import pygame, random, sys
 from pygame.locals import *
 
-# Set up some constants.
+    # Set up constants.
 TEXTCOLOR = (0, 0, 0)
 BACKGROUNDCOLOR = (255, 255, 255)
 BACKGROUNDIMAGE = pygame.image.load("back_printemps.png")
@@ -22,11 +22,13 @@ BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 30
 
 
-#Set up functions.
+    # Set up functions.
+# Exit the game.
 def terminate():
     pygame.quit()
     sys.exit()
 
+# Wait for the player to press enter or escape key.
 def waitForPlayerToPressKey():
     while True:
         for event in pygame.event.get():
@@ -40,19 +42,24 @@ def waitForPlayerToPressKey():
                     click_sound_menu.play()
                     return "play"
 
+# Check if the player has hit a baddie.
 def playerHasHitBaddie(playerRect, baddies):
     for b in baddies:
         if playerRect.colliderect(b['rect']):
             return b
     return None
 
-def drawText(text, font, surface, x, y, color = TEXTCOLOR):
+# Draw text on the surface.
+def drawText(text, font, surface, x, y, color = TEXTCOLOR, center = False):
     textobj = font.render(text, 1, color)
     textrect = textobj.get_rect()
-    textrect.topleft = (x, y)
+    if center:
+        textrect.center = (x, y)
+    else:
+        textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
 
-
+# Scale player image proportionally to a given height.
 def scale_proportionally(image, PLAYERHEIGHT):
     width, height = image.get_size()
     scale_factor = PLAYERHEIGHT / height
@@ -78,37 +85,53 @@ class Button:
         surface.blit(render, rect)
         return rect
 
-# Create main menu with start and quit button.
+# Create main menu with play, character selection, settings and quit buttons.
 def MainMenu():
     hovered_play = False
+    hovered_select = False
+    hovered_settings = False
     hovered_quit = False
 
     while True:
         pygame.mouse.set_visible(True)
 
         windowSurface.blit(MENU_BACKGROUND, (0,0))
-        drawText('Season Escape', menu_title_font, windowSurface, (WINDOWWIDTH/300), 0, (254, 237, 181))
+        drawText('Season Escape', menu_title_font, windowSurface, (WINDOWWIDTH/2), 125, (60,42,83), center = True)
         
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
         play_button = Button("Play", WINDOWWIDTH//2, int(WINDOWHEIGHT*0.45), menu_button_font)
+        select_button = Button("Select Character", WINDOWWIDTH//2, int(WINDOWHEIGHT*0.60), menu_button_font)
+        settings_button = Button("Settings", WINDOWWIDTH//2, int(WINDOWHEIGHT*0.75), menu_button_font)
         quit_button = Button("Quit", WINDOWWIDTH//2, int(WINDOWHEIGHT*0.9), menu_button_font)
         
         rect_play_normal = play_button.draw(windowSurface, (60,42,83))
+        rect_select_normal = select_button.draw(windowSurface, (254, 237, 181))
+        rect_settings_normal = settings_button.draw(windowSurface, (254, 237, 181))
         rect_quit_normal = quit_button.draw(windowSurface, (254, 237, 181))
 
         hover_play = rect_play_normal.collidepoint(mouse_x, mouse_y)
+        hover_select = rect_select_normal.collidepoint(mouse_x, mouse_y)
+        hover_settings = rect_settings_normal.collidepoint(mouse_x, mouse_y)
         hover_quit = rect_quit_normal.collidepoint(mouse_x, mouse_y)
 
         if hover_play and not hovered_play:
+            hover_sound_menu.play()
+        if hover_select and not hovered_select:
+            hover_sound_menu.play()
+        if hover_settings and not hovered_settings:
             hover_sound_menu.play()
         if hover_quit and not hovered_quit:
             hover_sound_menu.play()
         
         hovered_play = hover_play
+        hovered_select = hover_select
+        hovered_settings = hover_settings
         hovered_quit = hover_quit
 
         rect_play = play_button.draw(windowSurface, (60,42,83), (204,99,104), hover_play)
+        rect_select = select_button.draw(windowSurface, (254, 237, 181), (252,250,212), hover_select)
+        rect_settings = settings_button.draw(windowSurface, (254, 237, 181), (252,250,212), hover_settings)
         rect_quit = quit_button.draw(windowSurface, (254, 237, 181), (204,99,104), hover_quit)
 
         for event in pygame.event.get():
@@ -119,9 +142,75 @@ def MainMenu():
                     click_sound_menu.play()
                     pygame.mouse.set_visible(False)
                     return
+                if rect_select.collidepoint(mouse_x, mouse_y):
+                    click_sound_menu.play()
+                    CharacterSelectionMenu()
                 if rect_quit.collidepoint(mouse_x, mouse_y):
                     terminate()
 
+        pygame.display.update()
+        mainClock.tick(60)
+
+#Create character selection menu
+def CharacterSelectionMenu():
+    global playerImages, playerImage, playerRect
+    hovered_back = False
+    
+    all_characters_images = {
+        "Ninja": NinjaImages,
+        "Adventurer": AdventurerImages,
+        "Knight": KnightImages
+    }
+    characters = list(all_characters_images.keys())
+
+    characters_buttons = []
+
+    space_between = WINDOWWIDTH // (len(characters) + 1)
+    y_position = WINDOWHEIGHT // 1.75
+
+    for i, name in enumerate (characters):
+        character_image = all_characters_images[name]["stoic"]
+        character_image_rect = character_image.get_rect(center=((i+1)*space_between, y_position))
+        characters_buttons.append((name, character_image, character_image_rect))
+    
+    while True:
+        pygame.mouse.set_visible(True)
+        windowSurface.blit(MENU_BACKGROUND, (0,0))
+
+        drawText('Select your Destiny', character_select_title_font, windowSurface, (WINDOWWIDTH/2), 125, (60,42,83), center = True)
+
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        for name, image, rect in characters_buttons:
+            windowSurface.blit(image, rect)
+            drawText(name, character_select_font, windowSurface, rect.centerx, rect.bottom + 40, (254, 237, 181), center = True)
+        
+        back_button = Button("Back", 125, WINDOWHEIGHT - 60, character_select_font)
+        back_rect = back_button.draw(windowSurface, (254, 237, 181))
+        hover_back = back_rect.collidepoint(mouse_x, mouse_y)
+        if hover_back and not hovered_back:
+            hover_sound_menu.play()
+        hovered_back = hover_back
+        back_rect = back_button.draw(windowSurface, (254, 237, 181), (204,99,104), hover_back)
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                terminate()
+            
+            if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                if back_rect.collidepoint(mouse_x, mouse_y):
+                    click_sound_menu.play()
+                    return
+                for name, image, rect in characters_buttons:
+                    if rect.collidepoint(mouse_x, mouse_y):
+                        playerImages = all_characters_images[name]
+                        playerImage = playerImages["stoic"]
+                        playerRect = playerImage.get_rect()
+                        click_sound_menu.play()
+                        return
+                if rect.back.collidepoint(mouse_x, mouse_y):
+                    click_sound_menu.play()
+                    return
         pygame.display.update()
         mainClock.tick(60)
 
@@ -159,6 +248,8 @@ red_filter.fill((255, 0, 0))
 font = pygame.font.Font("8bit_font.ttf", 48)
 menu_title_font = pygame.font.Font("8bit_font.ttf", 300)
 menu_button_font = pygame.font.Font("8bit_font.ttf", 150)
+character_select_font = pygame.font.Font("8bit_font.ttf", 100)
+character_select_title_font = pygame.font.Font("8bit_font.ttf", 215)
 
 
 # Set up sounds.
