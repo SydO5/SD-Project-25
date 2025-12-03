@@ -163,28 +163,64 @@ def CharacterSelectionMenu():
     }
     characters = list(all_characters_images.keys())
 
-    characters_buttons = []
-
     space_between = WINDOWWIDTH // (len(characters) + 1)
-    y_position = WINDOWHEIGHT // 1.75
+    y_position = WINDOWHEIGHT // 1.9
 
-    for i, name in enumerate (characters):
-        character_image = all_characters_images[name]["stoic"]
-        character_image_rect = character_image.get_rect(center=((i+1)*space_between, y_position))
-        characters_buttons.append((name, character_image, character_image_rect))
+    characters_buttons = {}
+    for i, name in enumerate(characters):
+        img = all_characters_images[name]["stoic"]
+        rect = img.get_rect(center=((i+1)*space_between, y_position))
+        characters_buttons[name] = {"image": img, "rect": rect, "selected": False}
     
     while True:
         pygame.mouse.set_visible(True)
         windowSurface.blit(MENU_BACKGROUND, (0,0))
-
         drawText('Select your Destiny', character_select_title_font, windowSurface, (WINDOWWIDTH/2), 125, (60,42,83), center = True)
 
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
-        for name, image, rect in characters_buttons:
-            windowSurface.blit(image, rect)
-            drawText(name, character_select_font, windowSurface, rect.centerx, rect.bottom + 40, (254, 237, 181), center = True)
+        for name, data in characters_buttons.items():
+            img = data["image"]
+            rect = data["rect"]
+
+            scale = 2
+            scaled_img = pygame.transform.scale(img, (int(img.get_width()*scale), int(img.get_height()*scale)))
+            scaled_rect = scaled_img.get_rect(center=rect.center)
+            data["scaled_rect"] = scaled_rect
+
+            text_color = (254, 237, 181)
+            if data["selected"]:
+                text_color = (204, 99, 104)
+            scaled_text_surface = character_select_font.render(name, True, text_color)
+            text_rect = scaled_text_surface.get_rect(center=(scaled_rect.centerx, scaled_rect.bottom + 40))
+            data["text_rect"] = text_rect
+
+            hovered = rect.collidepoint(mouse_x, mouse_y) or text_rect.collidepoint(mouse_x, mouse_y)
+
+            if hovered and not data.get("hovered", False):
+                hover_sound_menu.play()
+            data["hovered"] = hovered
         
+            if hovered:
+                scale = 2.2
+            else:
+                scale = 2
+        
+            scaled_img = pygame.transform.scale(img, (int(img.get_width()*scale), int(img.get_height()*scale)))
+            scaled_rect = scaled_img.get_rect(center=rect.center)
+            windowSurface.blit(scaled_img, scaled_rect)
+            data["scaled_rect"] = scaled_rect
+
+            if data["selected"]:
+                color = (204,99,104)
+            elif hovered:
+                color = (252,250,212)
+            else:
+                color = (254, 237, 181)
+        
+            drawText(name, character_select_font, windowSurface, scaled_rect.centerx, scaled_rect.bottom + 40, color, center = True)
+            data["text_rect"] = character_select_font.render(name, True, color).get_rect(center=(scaled_rect.centerx, scaled_rect.bottom + 40))
+
         back_button = Button("Back", 125, WINDOWHEIGHT - 60, character_select_font)
         back_rect = back_button.draw(windowSurface, (254, 237, 181))
         hover_back = back_rect.collidepoint(mouse_x, mouse_y)
@@ -197,20 +233,23 @@ def CharacterSelectionMenu():
             if event.type == QUIT:
                 terminate()
             
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    click_sound_menu.play()
+                    return
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 if back_rect.collidepoint(mouse_x, mouse_y):
                     click_sound_menu.play()
                     return
-                for name, image, rect in characters_buttons:
-                    if rect.collidepoint(mouse_x, mouse_y):
+                for name, data in characters_buttons.items():
+                    if data["scaled_rect"].collidepoint(mouse_x, mouse_y) or data["text_rect"].collidepoint(mouse_x, mouse_y):
+                        for n in characters_buttons:
+                            characters_buttons[n]["selected"] = (n == name)
                         playerImages = all_characters_images[name]
                         playerImage = playerImages["stoic"]
                         playerRect = playerImage.get_rect()
                         click_sound_menu.play()
-                        return
-                if rect.back.collidepoint(mouse_x, mouse_y):
-                    click_sound_menu.play()
-                    return
+                        break
         pygame.display.update()
         mainClock.tick(60)
 
@@ -350,6 +389,10 @@ while True:
                     PLAYERYSPEED = -JUMPPOWER
                     JUMPSLEFT -= 1
                     on_ground = False
+                if event.key == K_ESCAPE:
+                    click_sound_menu.play()
+                    quit_to_menu = True
+                    break
 
             if event.type == KEYUP:
                 if event.key == K_z:
@@ -358,10 +401,6 @@ while True:
                 if event.key == K_x:
                     slowCheat = False
                     score = 0
-                if event.key == K_ESCAPE:
-                    click_sound_menu.play()
-                    quit_to_menu = True
-                    break
                     
 
                 if event.key == K_LEFT or event.key == K_a:
