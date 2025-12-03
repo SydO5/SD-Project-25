@@ -102,7 +102,7 @@ def MainMenu():
 
         play_button = Button("Play", WINDOWWIDTH//2, int(WINDOWHEIGHT*0.45), menu_button_font)
         select_button = Button("Select Character", WINDOWWIDTH//2, int(WINDOWHEIGHT*0.60), menu_button_font)
-        settings_button = Button("Settings", WINDOWWIDTH//2, int(WINDOWHEIGHT*0.75), menu_button_font)
+        settings_button = Button("Sound Settings", WINDOWWIDTH//2, int(WINDOWHEIGHT*0.75), menu_button_font)
         quit_button = Button("Quit", WINDOWWIDTH//2, int(WINDOWHEIGHT*0.9), menu_button_font)
         
         rect_play_normal = play_button.draw(windowSurface, (60,42,83))
@@ -272,11 +272,12 @@ BACKGROUNDIMAGE = pygame.transform.scale(BACKGROUNDIMAGE, (WINDOWWIDTH, WINDOWHE
 
 #Make dictionnary with backgrounds adjusted to screen size
 backgrounds = {
-    "printemps": pygame.transform.scale(pygame.image.load("back_printemps.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
-    "ete": pygame.transform.scale(pygame.image.load("back_été.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
-    "automne": pygame.transform.scale(pygame.image.load("back_automne.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
-    "hiver": pygame.transform.scale(pygame.image.load("back_hiver.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "Spring": pygame.transform.scale(pygame.image.load("back_printemps.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "Summer": pygame.transform.scale(pygame.image.load("back_été.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "Autumn": pygame.transform.scale(pygame.image.load("back_automne.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "Winter": pygame.transform.scale(pygame.image.load("back_hiver.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
 }
+current_season = "Spring"
 
 # Create red filter for when player is hit
 red_filter = pygame.Surface((WINDOWWIDTH, WINDOWHEIGHT))
@@ -289,9 +290,14 @@ menu_title_font = pygame.font.Font("8bit_font.ttf", 300)
 menu_button_font = pygame.font.Font("8bit_font.ttf", 150)
 character_select_font = pygame.font.Font("8bit_font.ttf", 100)
 character_select_title_font = pygame.font.Font("8bit_font.ttf", 215)
+season_font = pygame.font.Font("8bit_font.ttf", 100)
 gameover_title_font = pygame.font.Font("8bit_font.ttf", 400)
 gameover_font = pygame.font.Font("8bit_font.ttf", 70)
 
+season_colors = {"Spring": (9,101,76),
+                "Summer": (15,102,109),
+                "Autumn": (169,48,19),
+                "Winter": (28,118,145)}
 
 # Set up sounds.
 gameOverSound = pygame.mixer.Sound('gameover.mp3')
@@ -324,12 +330,12 @@ playerImages = NinjaImages
 playerImage = playerImages["stoic"]
 playerRect = playerImage.get_rect()
 
-baddieImages = {"printemps": pygame.image.load('thorn.png').convert_alpha(),
-                "ete": pygame.image.load('flame.png').convert_alpha(),
-                "automne": pygame.image.load('leaf.png').convert_alpha(),
-                "hiver": pygame.image.load('ice.png').convert_alpha()}
+baddieImages = {"Spring": pygame.image.load('thorn.png').convert_alpha(),
+                "Summer": pygame.image.load('flame.png').convert_alpha(),
+                "Autumn": pygame.image.load('leaf.png').convert_alpha(),
+                "Winter": pygame.image.load('ice.png').convert_alpha()}
 
-baddieImage = baddieImages["printemps"]
+baddieImage = baddieImages[current_season]
 
 heartImage = pygame.image.load('heart.png').convert_alpha()
 heartImage = pygame.transform.scale(heartImage, (80, 80))
@@ -360,23 +366,26 @@ while True:
         
         # Change background (season) based on score
         if score == 1:
-            BACKGROUNDIMAGE = backgrounds["printemps"]
-            baddieImage = baddieImages["printemps"]
+            BACKGROUNDIMAGE = backgrounds[current_season]
+            baddieImage = baddieImages[current_season]
         if score == 500 and NEXTBACKGROUNDIMAGE is None:
-            baddieImage = baddieImages["ete"]
-            NEXTBACKGROUNDIMAGE = backgrounds["ete"]
+            current_season = "Summer"
+            baddieImage = baddieImages[current_season]
+            NEXTBACKGROUNDIMAGE = backgrounds[current_season]
             fade_surface = NEXTBACKGROUNDIMAGE.copy()
             fade_surface.set_alpha(0)
             BACKGROUND_ALPHA = 0
         if score == 1000 and NEXTBACKGROUNDIMAGE is None:
-            baddieImage = baddieImages["automne"]
-            NEXTBACKGROUNDIMAGE = backgrounds["automne"]
+            current_season = "Autumn"
+            baddieImage = baddieImages[current_season]
+            NEXTBACKGROUNDIMAGE = backgrounds[current_season]
             fade_surface = NEXTBACKGROUNDIMAGE.copy()
             fade_surface.set_alpha(0)
             BACKGROUND_ALPHA = 0
         if score == 1500 and NEXTBACKGROUNDIMAGE is None:
-            baddieImage = baddieImages["hiver"]
-            NEXTBACKGROUNDIMAGE = backgrounds["hiver"]
+            current_season = "Winter"
+            baddieImage = baddieImages[current_season]
+            NEXTBACKGROUNDIMAGE = backgrounds[current_season]
             fade_surface = NEXTBACKGROUNDIMAGE.copy()
             fade_surface.set_alpha(0)
             BACKGROUND_ALPHA = 0
@@ -505,6 +514,7 @@ while True:
         # Draw the score, top score and remaining lives.
         drawText('Score : %s' % (score), font, windowSurface, 10, 0)
         drawText('Top Score : %s' % (topScore), font, windowSurface, 10, 40)
+        drawText(current_season, season_font, windowSurface, WINDOWWIDTH/2, 40, center = True, color = season_colors[current_season])
         for i in range(lives):
             windowSurface.blit(heartImage, (10 + i * (heartImage.get_width() + 10), WINDOWHEIGHT - heartImage.get_height() - 10))
 
@@ -530,11 +540,13 @@ while True:
             if lives <= 0:
                 if score > topScore:
                     topScore = score # set new top score
+                current_season = "Spring"
                 break
 
         mainClock.tick(FPS)
         
         if quit_to_menu:
+            current_season = "Spring"
             break
 
     # Stop the game and show the "Game Over" screen.
