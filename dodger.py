@@ -13,7 +13,7 @@ FPS = 60
 PLAYERMOVERATE = 8
 JUMPPOWER = 25
 GRAVITY = 1
-PLAYERHEIGHT = 150
+PLAYERHEIGHT = 200
 
 BADDIEMINSIZE = 30
 BADDIEMAXSIZE = 50
@@ -253,7 +253,7 @@ character_select_title_font = pygame.font.Font("8bit_font.ttf", 215)
 
 
 # Set up sounds.
-gameOverSound = pygame.mixer.Sound('gameover.wav')
+gameOverSound = pygame.mixer.Sound('gameover.mp3')
 pygame.mixer.music.load('background.mid')
 hit_sound = pygame.mixer.Sound('hit.mp3')
 click_sound_menu = pygame.mixer.Sound('click_menu.mp3')
@@ -489,7 +489,7 @@ while True:
             continue
     elif quit_to_menu == False:
         pygame.mixer.music.stop()
-        gameOverSound.play()
+        gameOverSound.play(fade_ms = 1500)
 
         windowSurface.blit(GAMEOVER_BACKGROUND, (0, 0))
         drawText('GAME OVER', menu_title_font, windowSurface, (WINDOWWIDTH/6.5), 100, (0, 0, 0))   
