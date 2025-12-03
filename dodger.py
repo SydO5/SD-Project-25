@@ -331,6 +331,9 @@ baddieImages = {"printemps": pygame.image.load('thorn.png').convert_alpha(),
 
 baddieImage = baddieImages["printemps"]
 
+heartImage = pygame.image.load('heart.png').convert_alpha()
+heartImage = pygame.transform.scale(heartImage, (80, 80))
+
 # Show the "Start" screen.
 MainMenu()
 
@@ -499,10 +502,11 @@ while True:
         else:
             windowSurface.blit(BACKGROUNDIMAGE, (0, 0))
 
-        # Draw the score and top score.
-        drawText('Score: %s' % (score), font, windowSurface, 10, 0)
-        drawText('Top Score: %s' % (topScore), font, windowSurface, 10, 40)
-        drawText('Lives: %s' % (lives), font, windowSurface, 10, 80)
+        # Draw the score, top score and remaining lives.
+        drawText('Score : %s' % (score), font, windowSurface, 10, 0)
+        drawText('Top Score : %s' % (topScore), font, windowSurface, 10, 40)
+        for i in range(lives):
+            windowSurface.blit(heartImage, (10 + i * (heartImage.get_width() + 10), WINDOWHEIGHT - heartImage.get_height() - 10))
 
         # Draw the player's rectangle.
         windowSurface.blit(playerImage, playerRect)
