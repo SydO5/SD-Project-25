@@ -223,20 +223,20 @@ WINDOWWIDTH, WINDOWHEIGHT = windowSurface.get_size()
 pygame.display.set_caption('Dodger')
 
 # Set up the background image for the menu.
-MENU_BACKGROUND = pygame.transform.scale(pygame.image.load("back_menu.png"), (WINDOWWIDTH, WINDOWHEIGHT))
+MENU_BACKGROUND = pygame.transform.scale(pygame.image.load("back_menu.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT))
 
 #Set up the background image for gameover.
-GAMEOVER_BACKGROUND = pygame.transform.scale(pygame.image.load("back_gameover.png"), (WINDOWWIDTH, WINDOWHEIGHT))
+GAMEOVER_BACKGROUND = pygame.transform.scale(pygame.image.load("back_gameover.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT))
 
 # Scale the background image to fit the screen.
 BACKGROUNDIMAGE = pygame.transform.scale(BACKGROUNDIMAGE, (WINDOWWIDTH, WINDOWHEIGHT))
 
 #Make dictionnary with backgrounds adjusted to screen size
 backgrounds = {
-    "printemps": pygame.transform.scale(pygame.image.load("back_printemps.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
-    "ete": pygame.transform.scale(pygame.image.load("back_été.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
-    "automne": pygame.transform.scale(pygame.image.load("back_automne.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
-    "hiver": pygame.transform.scale(pygame.image.load("back_hiver.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "printemps": pygame.transform.scale(pygame.image.load("back_printemps.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "ete": pygame.transform.scale(pygame.image.load("back_été.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "automne": pygame.transform.scale(pygame.image.load("back_automne.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "hiver": pygame.transform.scale(pygame.image.load("back_hiver.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
 }
 
 # Create red filter for when player is hit
@@ -260,29 +260,29 @@ click_sound_menu = pygame.mixer.Sound('click_menu.mp3')
 hover_sound_menu = pygame.mixer.Sound('hover_sound.mp3')
 
 # Set up images.
-NinjaImages = {"run_right" : scale_proportionally(pygame.image.load('ninja_run_right.png'), PLAYERHEIGHT),
-                "run_left" : scale_proportionally(pygame.image.load('ninja_run_left.png'), PLAYERHEIGHT),
-               "jump_right" : scale_proportionally(pygame.image.load('ninja_jump_right.png'), PLAYERHEIGHT),
-               "jump_left" : scale_proportionally(pygame.image.load('ninja_jump_left.png'), PLAYERHEIGHT),
-               "stoic": scale_proportionally(pygame.image.load('ninja_stoic.png'), PLAYERHEIGHT)}
+NinjaImages = {"run_right" : scale_proportionally(pygame.image.load('ninja_run_right.png').convert_alpha(), PLAYERHEIGHT),
+                "run_left" : scale_proportionally(pygame.image.load('ninja_run_left.png').convert_alpha(), PLAYERHEIGHT),
+               "jump_right" : scale_proportionally(pygame.image.load('ninja_jump_right.png').convert_alpha(), PLAYERHEIGHT),
+               "jump_left" : scale_proportionally(pygame.image.load('ninja_jump_left.png').convert_alpha(), PLAYERHEIGHT),
+               "stoic": scale_proportionally(pygame.image.load('ninja_stoic.png').convert_alpha(), PLAYERHEIGHT)}
 
-AdventurerImages = {"run_right" : scale_proportionally(pygame.image.load('adventurer_run_right.png'), PLAYERHEIGHT),
-                "run_left" : scale_proportionally(pygame.image.load('adventurer_run_left.png'), PLAYERHEIGHT),
-               "jump_right" : scale_proportionally(pygame.image.load('adventurer_jump_right.png'), PLAYERHEIGHT),
-               "jump_left" : scale_proportionally(pygame.image.load('adventurer_jump_left.png'), PLAYERHEIGHT),
-               "stoic": scale_proportionally(pygame.image.load('adventurer_stoic.png'), PLAYERHEIGHT)}
+AdventurerImages = {"run_right" : scale_proportionally(pygame.image.load('adventurer_run_right.png').convert_alpha(), PLAYERHEIGHT),
+                "run_left" : scale_proportionally(pygame.image.load('adventurer_run_left.png').convert_alpha(), PLAYERHEIGHT),
+               "jump_right" : scale_proportionally(pygame.image.load('adventurer_jump_right.png').convert_alpha(), PLAYERHEIGHT),
+               "jump_left" : scale_proportionally(pygame.image.load('adventurer_jump_left.png').convert_alpha(), PLAYERHEIGHT),
+               "stoic": scale_proportionally(pygame.image.load('adventurer_stoic.png').convert_alpha(), PLAYERHEIGHT)}
 
-KnightImages = {"run_right" : scale_proportionally(pygame.image.load('knight_run_right.png'), PLAYERHEIGHT),
-                "run_left" : scale_proportionally(pygame.image.load('knight_run_left.png'), PLAYERHEIGHT),
-               "jump_right" : scale_proportionally(pygame.image.load('knight_jump_right.png'), PLAYERHEIGHT),
-               "jump_left" : scale_proportionally(pygame.image.load('knight_jump_left.png'), PLAYERHEIGHT),
-               "stoic": scale_proportionally(pygame.image.load('knight_stoic.png'), PLAYERHEIGHT)}
+KnightImages = {"run_right" : scale_proportionally(pygame.image.load('knight_run_right.png').convert_alpha(), PLAYERHEIGHT),
+                "run_left" : scale_proportionally(pygame.image.load('knight_run_left.png').convert_alpha(), PLAYERHEIGHT),
+               "jump_right" : scale_proportionally(pygame.image.load('knight_jump_right.png').convert_alpha(), PLAYERHEIGHT),
+               "jump_left" : scale_proportionally(pygame.image.load('knight_jump_left.png').convert_alpha(), PLAYERHEIGHT),
+               "stoic": scale_proportionally(pygame.image.load('knight_stoic.png').convert_alpha(), PLAYERHEIGHT)}
 
 playerImages = NinjaImages
 
 playerImage = playerImages["stoic"]
 playerRect = playerImage.get_rect()
-baddieImage = pygame.image.load('baddie.png')
+baddieImage = pygame.image.load('baddie.png').convert_alpha()
 
 # Show the "Start" screen.
 MainMenu()
