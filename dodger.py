@@ -664,6 +664,7 @@ while True:
             continue
     elif quit_to_menu == False:
         pygame.mixer.music.stop()
+        
         gameOverSound.play(fade_ms = 1500)
 
         windowSurface.blit(GAMEOVER_BACKGROUND, (0, 0))
@@ -671,7 +672,6 @@ while True:
         drawText('Enter if you dare to play again...', gameover_font, windowSurface, (WINDOWWIDTH/2), (WINDOWHEIGHT / 2), color = (255, 255, 255), center = True)
         drawText('If you are not brave enough escape...', gameover_font, windowSurface, (WINDOWWIDTH/2), (WINDOWHEIGHT/1.4), color = (255, 255, 255), center = True)
         pygame.display.update()
-    
         result = waitForPlayerToPressKey()
         gameOverSound.stop()
         if result == "menu":
