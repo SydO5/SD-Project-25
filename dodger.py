@@ -11,7 +11,7 @@ BACKGROUND_FADE_SPEED = 10
 FPS = 60
 
 MUSICVOLUME = 0.5
-SFXVOLUME = 0.7
+SFXVOLUME = 0.5
 volume_changed = False
 
 PLAYERMOVERATE = 8
@@ -611,8 +611,8 @@ while True:
             windowSurface.blit(BACKGROUNDIMAGE, (0, 0))
 
         # Draw the score, top score and remaining lives.
-        drawText('Score : %s' % (score), font, windowSurface, 10, 0)
-        drawText('Top Score : %s' % (topScore), font, windowSurface, 10, 40)
+        drawText('Score : %s' % (score), font, windowSurface, 10, 0, color = season_colors[current_season])
+        drawText('Top Score : %s' % (topScore), font, windowSurface, 10, 40, color = season_colors[current_season])
         drawText(current_season, season_font, windowSurface, WINDOWWIDTH/2, 40, center = True, color = season_colors[current_season])
         for i in range(lives):
             windowSurface.blit(heartImage, (10 + i * (heartImage.get_width() + 10), WINDOWHEIGHT - heartImage.get_height() - 10))
