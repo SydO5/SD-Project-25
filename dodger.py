@@ -175,7 +175,7 @@ def CharacterSelectionMenu():
     while True:
         pygame.mouse.set_visible(True)
         windowSurface.blit(MENU_BACKGROUND, (0,0))
-        drawText('Select your Destiny', character_select_title_font, windowSurface, (WINDOWWIDTH/2), 125, (60,42,83), center = True)
+        drawText('Select your Destiny', character_select_title_font, windowSurface, (WINDOWWIDTH/2), 125, (254, 237, 181), center = True)
 
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
@@ -289,6 +289,9 @@ menu_title_font = pygame.font.Font("8bit_font.ttf", 300)
 menu_button_font = pygame.font.Font("8bit_font.ttf", 150)
 character_select_font = pygame.font.Font("8bit_font.ttf", 100)
 character_select_title_font = pygame.font.Font("8bit_font.ttf", 215)
+gameover_title_font = pygame.font.Font("8bit_font.ttf", 400)
+gameover_title_font.set_bold(True)
+gameover_font = pygame.font.Font("8bit_font.ttf", 70)
 
 
 # Set up sounds.
@@ -531,9 +534,9 @@ while True:
         gameOverSound.play(fade_ms = 1500)
 
         windowSurface.blit(GAMEOVER_BACKGROUND, (0, 0))
-        drawText('GAME OVER', menu_title_font, windowSurface, (WINDOWWIDTH/6.5), 100, (0, 0, 0))   
-        drawText('Enter if you dare to play again...', font, windowSurface, (WINDOWWIDTH/3.5), (WINDOWHEIGHT / 2), color = (255, 255, 255))
-        drawText('If you are not brave enough escape...', font, windowSurface, (WINDOWWIDTH/3.75), (WINDOWHEIGHT/1.5), color = (255, 255, 255))
+        drawText('GAME OVER', gameover_title_font, windowSurface, (WINDOWWIDTH/2), 220, (15, 8, 5), center = True)   
+        drawText('Enter if you dare to play again...', gameover_font, windowSurface, (WINDOWWIDTH/2), (WINDOWHEIGHT / 2), color = (255, 255, 255), center = True)
+        drawText('If you are not brave enough escape...', gameover_font, windowSurface, (WINDOWWIDTH/2), (WINDOWHEIGHT/1.4), color = (255, 255, 255), center = True)
         pygame.display.update()
     
         result = waitForPlayerToPressKey()
