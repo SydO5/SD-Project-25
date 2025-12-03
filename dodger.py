@@ -10,6 +10,10 @@ BACKGROUND_ALPHA = 0
 BACKGROUND_FADE_SPEED = 10
 FPS = 60
 
+MUSICVOLUME = 0.5
+SFXVOLUME = 0.7
+volume_changed = False
+
 PLAYERMOVERATE = 8
 JUMPPOWER = 25
 GRAVITY = 1
@@ -145,6 +149,9 @@ def MainMenu():
                 if rect_select.collidepoint(mouse_x, mouse_y):
                     click_sound_menu.play()
                     CharacterSelectionMenu()
+                if rect_settings.collidepoint(mouse_x, mouse_y):
+                    click_sound_menu.play()
+                    SettingsMenu()
                 if rect_quit.collidepoint(mouse_x, mouse_y):
                     terminate()
 
@@ -175,7 +182,7 @@ def CharacterSelectionMenu():
     while True:
         pygame.mouse.set_visible(True)
         windowSurface.blit(MENU_BACKGROUND, (0,0))
-        drawText('Select your Destiny', character_select_title_font, windowSurface, (WINDOWWIDTH/2), 125, (254, 237, 181), center = True)
+        drawText('Select your Destiny', character_select_title_font, windowSurface, (WINDOWWIDTH/2), 125, (60,42,83), center = True)
 
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
@@ -250,6 +257,98 @@ def CharacterSelectionMenu():
                         playerRect = playerImage.get_rect()
                         click_sound_menu.play()
                         break
+        pygame.display.update()
+        mainClock.tick(60)
+
+# Create sound settings menu.
+def SettingsMenu():
+    global MUSICVOLUME, SFXVOLUME, volume_changed
+    hovered_back = False
+
+    slider_width = WINDOWWIDTH // 3
+    slider_height = 20
+    slider_x = WINDOWWIDTH // 2 - slider_width // 2
+    
+    music_y = int(WINDOWHEIGHT * 0.4)
+    sfx_y = int(WINDOWHEIGHT * 0.6)
+    
+    dragging_music = False
+    dragging_sfx = False
+
+    while True:
+        pygame.mouse.set_visible(True)
+        windowSurface.blit(MENU_BACKGROUND, (0,0))
+        drawText('Sound Settings', character_select_title_font, windowSurface, (WINDOWWIDTH/2), 125, (60,42,83), center = True)
+        
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        # Draw Music Slider
+        drawText("Music Volume:", font, windowSurface, slider_x, music_y - 50, (60,42,83))
+        pygame.draw.rect(windowSurface, (60,42,83), (slider_x, music_y, slider_width, slider_height), 0, 5)
+        music_knob_x = slider_x + int(MUSICVOLUME * slider_width)
+        music_knob_rect = pygame.Rect(music_knob_x - 10, music_y - 5, 20, 30)
+        pygame.draw.rect(windowSurface, (204, 99, 104), music_knob_rect, 0, 5)
+
+        # Draw SFX Slider
+        drawText("SFX Volume:", font, windowSurface, slider_x, sfx_y - 50, (60,42,83))
+        pygame.draw.rect(windowSurface, (60,42,83), (slider_x, sfx_y, slider_width, slider_height), 0, 5)
+        sfx_knob_x = slider_x + int(SFXVOLUME * slider_width)
+        sfx_knob_rect = pygame.Rect(sfx_knob_x - 10, sfx_y - 5, 20, 30)
+        pygame.draw.rect(windowSurface, (204, 99, 104), sfx_knob_rect, 0, 5)
+
+        # Draw percentage labels
+        drawText(f"{int(MUSICVOLUME * 100)}%", font, windowSurface, slider_x + slider_width + 20, music_y - 18, (60,42,83))
+        drawText(f"{int(SFXVOLUME * 100)}%", font, windowSurface, slider_x + slider_width + 20, sfx_y - 18, (60,42,83))
+
+        back_button = Button("Back", 125, WINDOWHEIGHT - 60, character_select_font)
+        back_rect = back_button.draw(windowSurface, (254, 237, 181))
+        hover_back = back_rect.collidepoint(mouse_x, mouse_y)
+        if hover_back and not hovered_back:
+            hover_sound_menu.play()
+        hovered_back = hover_back
+        back_rect = back_button.draw(windowSurface, (254, 237, 181), (204,99,104), hover_back)
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                terminate()
+
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    click_sound_menu.play()
+                    return
+
+            if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                if back_rect.collidepoint(mouse_x, mouse_y):
+                    click_sound_menu.play()
+                    volume_changed = True
+                    return
+                
+                if music_knob_rect.collidepoint(mouse_x, mouse_y) or (slider_x <= mouse_x <= slider_x + slider_width and music_y <= mouse_y <= music_y + slider_height):
+                    dragging_music = True
+                    click_sound_menu.play()
+                elif sfx_knob_rect.collidepoint(mouse_x, mouse_y) or (slider_x <= mouse_x <= slider_x + slider_width and sfx_y <= mouse_y <= sfx_y + slider_height):
+                    dragging_sfx = True
+                    click_sound_menu.play()
+                    
+            if event.type == MOUSEBUTTONUP and event.button == 1:
+                dragging_music = False
+                dragging_sfx = False
+                
+            if event.type == MOUSEMOTION:
+                if dragging_music:
+                    new_x = max(slider_x, min(mouse_x, slider_x + slider_width))
+                    MUSICVOLUME = (new_x - slider_x) / slider_width
+                    pygame.mixer.music.set_volume(MUSICVOLUME)
+
+                if dragging_sfx:
+                    new_x = max(slider_x, min(mouse_x, slider_x + slider_width))
+                    SFXVOLUME = (new_x - slider_x) / slider_width
+
+                    hit_sound.set_volume(SFXVOLUME)
+                    click_sound_menu.set_volume(SFXVOLUME)
+                    hover_sound_menu.set_volume(SFXVOLUME)
+                    gameOverSound.set_volume(SFXVOLUME)
+                    
         pygame.display.update()
         mainClock.tick(60)
 
