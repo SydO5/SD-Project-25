@@ -15,8 +15,8 @@ JUMPPOWER = 25
 GRAVITY = 1
 PLAYERHEIGHT = 200
 
-BADDIEMINSIZE = 30
-BADDIEMAXSIZE = 50
+BADDIEMINSIZE = 50
+BADDIEMAXSIZE = 100
 BADDIEMINSPEED = 5
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 30
@@ -323,7 +323,13 @@ playerImages = NinjaImages
 
 playerImage = playerImages["stoic"]
 playerRect = playerImage.get_rect()
-baddieImage = pygame.image.load('baddie.png').convert_alpha()
+
+baddieImages = {"printemps": pygame.image.load('thorn.png').convert_alpha(),
+                "ete": pygame.image.load('flame.png').convert_alpha(),
+                "automne": pygame.image.load('leaf.png').convert_alpha(),
+                "hiver": pygame.image.load('ice.png').convert_alpha()}
+
+baddieImage = baddieImages["printemps"]
 
 # Show the "Start" screen.
 MainMenu()
@@ -352,17 +358,21 @@ while True:
         # Change background (season) based on score
         if score == 1:
             BACKGROUNDIMAGE = backgrounds["printemps"]
+            baddieImage = baddieImages["printemps"]
         if score == 500 and NEXTBACKGROUNDIMAGE is None:
+            baddieImage = baddieImages["ete"]
             NEXTBACKGROUNDIMAGE = backgrounds["ete"]
             fade_surface = NEXTBACKGROUNDIMAGE.copy()
             fade_surface.set_alpha(0)
             BACKGROUND_ALPHA = 0
         if score == 1000 and NEXTBACKGROUNDIMAGE is None:
+            baddieImage = baddieImages["automne"]
             NEXTBACKGROUNDIMAGE = backgrounds["automne"]
             fade_surface = NEXTBACKGROUNDIMAGE.copy()
             fade_surface.set_alpha(0)
             BACKGROUND_ALPHA = 0
         if score == 1500 and NEXTBACKGROUNDIMAGE is None:
+            baddieImage = baddieImages["hiver"]
             NEXTBACKGROUNDIMAGE = backgrounds["hiver"]
             fade_surface = NEXTBACKGROUNDIMAGE.copy()
             fade_surface.set_alpha(0)
