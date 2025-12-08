@@ -19,11 +19,22 @@ JUMPPOWER = 25
 GRAVITY = 1
 PLAYERHEIGHT = 200
 
+# --- AJOUT HAUTEUR DU SOL ---
+# On définit la hauteur du sol pour que le joueur marche dessus
+FLOOR_HEIGHT = 90 
+# ----------------------------
+
 BADDIEMINSIZE = 50
 BADDIEMAXSIZE = 100
 BADDIEMINSPEED = 5
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 30
+
+PLATFORMMINWIDTH = 100
+PLATFORMMAXWIDTH = 250
+PLATFORMHEIGHT = 40
+ADDNEWPLATFORMRATE = 90
+PLATFORMSPEED = 6
 
 
     # Set up functions.
@@ -443,6 +454,27 @@ baddieImages = {"Spring": pygame.image.load('thorn.png').convert_alpha(),
 
 baddieImage = baddieImages[current_season]
 
+# --- CHARGEMENT DES PLATEFORMES ---
+platformImages = {
+    "Spring": pygame.image.load('platform_spring.png').convert_alpha(),
+    "Summer": pygame.image.load('platform_summer.png').convert_alpha(),
+    "Autumn": pygame.image.load('platform_autumn.png').convert_alpha(),
+    "Winter": pygame.image.load('platform_winter.png').convert_alpha()
+}
+current_platform_image = platformImages[current_season]
+
+# --- CHARGEMENT DU SOL (AJOUT) ---
+# On charge les images, on les redimensionne pour qu'elles fassent la largeur de l'écran (si besoin)
+floorImages = {
+    "Spring": pygame.transform.scale(pygame.image.load('floor_spring.png').convert_alpha(), (WINDOWWIDTH, FLOOR_HEIGHT)),
+    "Summer": pygame.transform.scale(pygame.image.load('floor_summer.png').convert_alpha(), (WINDOWWIDTH, FLOOR_HEIGHT)),
+    "Autumn": pygame.transform.scale(pygame.image.load('floor_autumn.png').convert_alpha(), (WINDOWWIDTH, FLOOR_HEIGHT)),
+    "Winter": pygame.transform.scale(pygame.image.load('floor_winter.png').convert_alpha(), (WINDOWWIDTH, FLOOR_HEIGHT))
+}
+current_floor_image = floorImages[current_season]
+floor_x = 0 # Position X du sol
+# ---------------------------------
+
 heartImage = pygame.image.load('heart.png').convert_alpha()
 heartImage = pygame.transform.scale(heartImage, (80, 80))
 
@@ -459,6 +491,10 @@ while True:
     quit_to_menu = False
     baddies = []
     baddieAddCounter = 0
+    
+    platforms = []
+    platformAddCounter = 0
+    
     score = 0
     lives = 3
     moveLeft = moveRight = False
@@ -476,9 +512,13 @@ while True:
         if score == 1:
             BACKGROUNDIMAGE = backgrounds[current_season]
             baddieImage = baddieImages[current_season]
+            current_platform_image = platformImages[current_season]
+            current_floor_image = floorImages[current_season] # MAJ SOL
         if score == 500 and NEXTBACKGROUNDIMAGE is None:
             current_season = "Summer"
             baddieImage = baddieImages[current_season]
+            current_platform_image = platformImages[current_season]
+            current_floor_image = floorImages[current_season] # MAJ SOL
             NEXTBACKGROUNDIMAGE = backgrounds[current_season]
             fade_surface = NEXTBACKGROUNDIMAGE.copy()
             fade_surface.set_alpha(0)
@@ -486,6 +526,8 @@ while True:
         if score == 1000 and NEXTBACKGROUNDIMAGE is None:
             current_season = "Autumn"
             baddieImage = baddieImages[current_season]
+            current_platform_image = platformImages[current_season]
+            current_floor_image = floorImages[current_season] # MAJ SOL
             NEXTBACKGROUNDIMAGE = backgrounds[current_season]
             fade_surface = NEXTBACKGROUNDIMAGE.copy()
             fade_surface.set_alpha(0)
@@ -493,6 +535,8 @@ while True:
         if score == 1500 and NEXTBACKGROUNDIMAGE is None:
             current_season = "Winter"
             baddieImage = baddieImages[current_season]
+            current_platform_image = platformImages[current_season]
+            current_floor_image = floorImages[current_season] # MAJ SOL
             NEXTBACKGROUNDIMAGE = backgrounds[current_season]
             fade_surface = NEXTBACKGROUNDIMAGE.copy()
             fade_surface.set_alpha(0)
@@ -543,7 +587,6 @@ while True:
                     GRAVITY = 1
 
         #Change play image based on movement and jumping
-        # Choisir l'image du joueur selon mouvement et saut
         if not on_ground:
             if moveLeft:
                 playerImage = playerImages["jump_left"]
@@ -559,7 +602,7 @@ while True:
             else:
                 playerImage = playerImages["stoic"]
 
-        # Add new baddies at the left of the screen, if needed.
+        # Add new baddies
         if not reverseCheat and not slowCheat:
             baddieAddCounter += 1
         if baddieAddCounter == ADDNEWBADDIERATE:
@@ -572,25 +615,54 @@ while True:
 
             baddies.append(newBaddie)
 
+        # Add new platforms
+        if not reverseCheat and not slowCheat:
+            platformAddCounter += 1
+        
+        if platformAddCounter >= ADDNEWPLATFORMRATE:
+            platformAddCounter = 0
+            plat_width = random.randint(PLATFORMMINWIDTH, PLATFORMMAXWIDTH)
+            plat_y = random.randint(WINDOWHEIGHT // 2, WINDOWHEIGHT - 100)
+            
+            newPlatform = {
+                'rect': pygame.Rect(WINDOWWIDTH, plat_y, plat_width, PLATFORMHEIGHT),
+                'speed': PLATFORMSPEED,
+                'surface': pygame.transform.scale(current_platform_image, (plat_width, PLATFORMHEIGHT))
+            }
+            platforms.append(newPlatform)
 
         # Apply gravity to the player.
         PLAYERYSPEED += GRAVITY
         playerRect.y += PLAYERYSPEED
+        
+        # Collision Plateformes
+        on_ground = False 
+        for p in platforms:
+            if playerRect.colliderect(p['rect']):
+                if PLAYERYSPEED > 0 and playerRect.bottom < p['rect'].bottom:
+                    playerRect.bottom = p['rect'].top
+                    PLAYERYSPEED = 0
+                    on_ground = True
+                    JUMPSLEFT = 2
 
-        #So player can't fall below the floor.
-        if playerRect.bottom >= WINDOWHEIGHT:
-            playerRect.bottom = WINDOWHEIGHT
+        # --- COLLISION AVEC LE SOL ---
+        # Le joueur ne peut pas tomber plus bas que le haut de l'image du sol
+        if playerRect.bottom >= WINDOWHEIGHT - FLOOR_HEIGHT + 30: # +30 pour un léger chevauchement esthétique
+            playerRect.bottom = WINDOWHEIGHT - FLOOR_HEIGHT + 30
             PLAYERYSPEED = 0
             on_ground = True
             JUMPSLEFT = 2
+        # -----------------------------
 
-        # Move the player around.
+        # Move the player around AND SCROLL FLOOR.
         if moveLeft and playerRect.left > 0:
             playerRect.move_ip(-1 * PLAYERMOVERATE, 0)
+            floor_x += PLAYERMOVERATE # Si joueur va à gauche, sol va à droite
         if moveRight and playerRect.right < WINDOWWIDTH:
             playerRect.move_ip(PLAYERMOVERATE, 0)
+            floor_x -= PLAYERMOVERATE # Si joueur va à droite, sol va à gauche
 
-        # Move the baddies to the left.
+        # Move the baddies
         for b in baddies:
             if not reverseCheat and not slowCheat:
                 b['rect'].move_ip(-b['speed'],0)
@@ -598,11 +670,25 @@ while True:
                 b['rect'].move_ip(5, 0)
             elif slowCheat:
                 b['rect'].move_ip(-1, 0)
+        
+        # Move the platforms
+        for p in platforms:
+             if not reverseCheat and not slowCheat:
+                p['rect'].move_ip(-p['speed'], 0)
+             elif reverseCheat:
+                p['rect'].move_ip(5, 0)
+             elif slowCheat:
+                p['rect'].move_ip(-1, 0)
 
-        # Delete baddies that have gone past the left of the screen.
+        # Clean up
         for b in baddies[:]:
             if b['rect'].right < 0:
                 baddies.remove(b)
+        
+        for p in platforms[:]:
+            if p['rect'].right < 0:
+                platforms.remove(p)
+
 
         # Draw the game world on the window.     
         if NEXTBACKGROUNDIMAGE:
@@ -619,12 +705,24 @@ while True:
         else:
             windowSurface.blit(BACKGROUNDIMAGE, (0, 0))
 
-        # Draw the score, top score and remaining lives.
+        # --- DESSINER LE SOL AVEC EFFET DE SCROLLING ---
+        # On utilise le modulo (%) pour créer une boucle infinie de l'image
+        rel_x = floor_x % current_floor_image.get_rect().width
+        windowSurface.blit(current_floor_image, (rel_x - current_floor_image.get_rect().width, WINDOWHEIGHT - FLOOR_HEIGHT))
+        if rel_x < WINDOWWIDTH:
+            windowSurface.blit(current_floor_image, (rel_x, WINDOWHEIGHT - FLOOR_HEIGHT))
+        # -----------------------------------------------
+
+        # Draw the score
         drawText('Score : %s' % (score), font, windowSurface, 10, 0, color = season_colors[current_season])
         drawText('Top Score : %s' % (topScore), font, windowSurface, 10, 40, color = season_colors[current_season])
         drawText(current_season, season_font, windowSurface, WINDOWWIDTH/2, 40, center = True, color = season_colors[current_season])
         for i in range(lives):
             windowSurface.blit(heartImage, (10 + i * (heartImage.get_width() + 10), WINDOWHEIGHT - heartImage.get_height() - 10))
+
+        # Draw platforms
+        for p in platforms:
+            windowSurface.blit(p['surface'], p['rect'])
 
         # Draw the player's rectangle.
         windowSurface.blit(playerImage, playerRect)
@@ -635,7 +733,7 @@ while True:
 
         pygame.display.update()
 
-        # Check if any of the baddies have hit the player.
+        # Check hits
         if playerHasHitBaddie(playerRect, baddies) is not None:
             lives -= 1
             baddies.remove(playerHasHitBaddie(playerRect, baddies))
