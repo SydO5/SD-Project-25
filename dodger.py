@@ -25,6 +25,7 @@ BADDIEMINSPEED = 5
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 30
 
+ADDNEWCOINRATE = 200
 
     # Set up functions.
 # Exit the game.
@@ -51,6 +52,13 @@ def playerHasHitBaddie(playerRect, baddies):
     for b in baddies:
         if playerRect.colliderect(b['rect']):
             return b
+    return None
+
+# Check if the player has collected a coin.
+def playerHasCollectedCoin(playerRect, coins):
+    for c in coins:
+        if playerRect.colliderect(c["rect"]):
+            return c
     return None
 
 # Draw text on the surface.
@@ -411,6 +419,7 @@ gameOverSound = pygame.mixer.Sound('gameover.mp3')
 hit_sound = pygame.mixer.Sound('hit.mp3')
 click_sound_menu = pygame.mixer.Sound('click_menu.mp3')
 hover_sound_menu = pygame.mixer.Sound('hover_sound.mp3')
+coin_collected_sound = pygame.mixer.Sound("coin.mp3")
 
 # Set up images.
 NinjaImages = {"run_right" : scale_proportionally(pygame.image.load('ninja_run_right.png').convert_alpha(), PLAYERHEIGHT),
@@ -446,6 +455,8 @@ baddieImage = baddieImages[current_season]
 heartImage = pygame.image.load('heart.png').convert_alpha()
 heartImage = pygame.transform.scale(heartImage, (80, 80))
 
+coinImage = pygame.image.load('coin.png').convert_alpha()
+
 # Show the "Start" screen.
 MainMenu()
 
@@ -460,6 +471,8 @@ while True:
     baddies = []
     baddieAddCounter = 0
     score = 0
+    coins = []
+    coinAddCounter = 0
     lives = 3
     moveLeft = moveRight = False
     reverseCheat = slowCheat = False
@@ -572,6 +585,18 @@ while True:
 
             baddies.append(newBaddie)
 
+        # Add coins to rise score.
+        coinAddCounter += 1
+        if coinAddCounter == ADDNEWCOINRATE:
+            coinAddCounter = 0
+            coinSize = 50
+            newCoin = {'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - coinSize), coinSize, coinSize),
+                        'speed': 5,
+                        'surface':pygame.transform.scale(coinImage, (coinSize, coinSize)),
+                        }
+
+            coins.append(newCoin)
+
 
         # Apply gravity to the player.
         PLAYERYSPEED += GRAVITY
@@ -598,11 +623,20 @@ while True:
                 b['rect'].move_ip(5, 0)
             elif slowCheat:
                 b['rect'].move_ip(-1, 0)
+        
+        # Move the coins to the left.
+        for c in coins:
+            c['rect'].move_ip(-c['speed'],0)
 
         # Delete baddies that have gone past the left of the screen.
         for b in baddies[:]:
             if b['rect'].right < 0:
                 baddies.remove(b)
+        
+        # Delete coins that have gone past the left of the screen.
+        for c in coins[:]:
+            if c['rect'].right < 0:
+                coins.remove(c)
 
         # Draw the game world on the window.     
         if NEXTBACKGROUNDIMAGE:
@@ -633,6 +667,10 @@ while True:
         for b in baddies:
             windowSurface.blit(b['surface'], b['rect'])
 
+        # Draw coins
+        for c in coins:
+            windowSurface.blit(c['surface'], c['rect'])
+
         pygame.display.update()
 
         # Check if any of the baddies have hit the player.
@@ -650,6 +688,12 @@ while True:
                     topScore = score # set new top score
                 current_season = "Spring"
                 break
+        
+        # Check if player has collected a coin
+        if playerHasCollectedCoin(playerRect, coins) is not None:
+            coins.remove(playerHasCollectedCoin(playerRect, coins))
+            coin_collected_sound.play()
+            score += 100
 
         mainClock.tick(FPS)
         
