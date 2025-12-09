@@ -693,6 +693,7 @@ while True:
                     topScore = score # set new top score
                 if day > topDay:
                     topDay = day
+                current_season = seasons[0]
                 break
         
         # Check if player has collected a coin
