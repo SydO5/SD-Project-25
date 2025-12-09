@@ -23,7 +23,7 @@ BADDIEMINSIZE = 50
 BADDIEMAXSIZE = 100
 BADDIEMINSPEED = 5
 BADDIEMAXSPEED = 8
-ADDNEWBADDIERATE = 30
+ADDNEWBADDIERATE = 50
 
 ADDNEWCOINRATE = 200
 
@@ -578,7 +578,11 @@ while True:
         if baddieAddCounter == ADDNEWBADDIERATE:
             baddieAddCounter = 0
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
-            newBaddie = {'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - baddieSize), baddieSize, baddieSize),
+            spawn_range = 150
+            baddieMinY = max(0, playerRect.centery - spawn_range)
+            baddieMaxY = min(WINDOWHEIGHT - baddieSize, playerRect.centery + spawn_range)
+            baddieY = random.randint(baddieMinY, baddieMaxY)
+            newBaddie = {'rect': pygame.Rect(WINDOWWIDTH, baddieY, baddieSize, baddieSize),
                         'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
                         'surface':pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
                         }
