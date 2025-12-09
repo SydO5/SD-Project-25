@@ -392,7 +392,10 @@ backgrounds = {
     "Autumn": pygame.transform.scale(pygame.image.load("back_automne.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
     "Winter": pygame.transform.scale(pygame.image.load("back_hiver.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
 }
-current_season = "Spring"
+
+seasons = ["Spring", "Summer", "Autumn", "Winter"]
+season_index = 0
+current_season = seasons[season_index]
 
 # Create red filter for when player is hit
 red_filter = pygame.Surface((WINDOWWIDTH, WINDOWHEIGHT))
@@ -461,6 +464,7 @@ coinImage = pygame.image.load('coin.png').convert_alpha()
 MainMenu()
 
 topScore = 0
+topDay = 0
 while True:
     # Set up the start of the game.
     playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 50)
@@ -471,6 +475,9 @@ while True:
     baddies = []
     baddieAddCounter = 0
     score = 0
+    day = 0
+    day_timer = 0
+    season_index = 0
     coins = []
     coinAddCounter = 0
     lives = 3
@@ -485,26 +492,19 @@ while True:
     while True: # The game loop runs while the game part is playing.
         score += 1 # Increase score.
         
-        # Change background (season) based on score
-        if score == 1:
+        day_timer += 1
+        if day_timer >= 10:
+            day += 1
+            day_timer = 0
+        
+        # Change background (season) based on days
+        if day == 0:
             BACKGROUNDIMAGE = backgrounds[current_season]
             baddieImage = baddieImages[current_season]
-        if score == 500 and NEXTBACKGROUNDIMAGE is None:
-            current_season = "Summer"
-            baddieImage = baddieImages[current_season]
-            NEXTBACKGROUNDIMAGE = backgrounds[current_season]
-            fade_surface = NEXTBACKGROUNDIMAGE.copy()
-            fade_surface.set_alpha(0)
-            BACKGROUND_ALPHA = 0
-        if score == 1000 and NEXTBACKGROUNDIMAGE is None:
-            current_season = "Autumn"
-            baddieImage = baddieImages[current_season]
-            NEXTBACKGROUNDIMAGE = backgrounds[current_season]
-            fade_surface = NEXTBACKGROUNDIMAGE.copy()
-            fade_surface.set_alpha(0)
-            BACKGROUND_ALPHA = 0
-        if score == 1500 and NEXTBACKGROUNDIMAGE is None:
-            current_season = "Winter"
+
+        if day % 90 == 0 and day != 0 and NEXTBACKGROUNDIMAGE is None:
+            season_index = (season_index + 1) % len(seasons)
+            current_season = seasons[season_index]
             baddieImage = baddieImages[current_season]
             NEXTBACKGROUNDIMAGE = backgrounds[current_season]
             fade_surface = NEXTBACKGROUNDIMAGE.copy()
@@ -660,7 +660,8 @@ while True:
         # Draw the score, top score and remaining lives.
         drawText('Score : %s' % (score), font, windowSurface, 10, 0, color = season_colors[current_season])
         drawText('Top Score : %s' % (topScore), font, windowSurface, 10, 40, color = season_colors[current_season])
-        drawText(current_season, season_font, windowSurface, WINDOWWIDTH/2, 40, center = True, color = season_colors[current_season])
+        drawText('Top Days : %s' % (topDay), font, windowSurface, 10, 80, color = season_colors[current_season])
+        drawText(f"{current_season} | {day} days", season_font, windowSurface, WINDOWWIDTH/2, 40, center = True, color = season_colors[current_season])
         for i in range(lives):
             windowSurface.blit(heartImage, (10 + i * (heartImage.get_width() + 10), WINDOWHEIGHT - heartImage.get_height() - 10))
 
@@ -690,7 +691,8 @@ while True:
             if lives <= 0:
                 if score > topScore:
                     topScore = score # set new top score
-                current_season = "Spring"
+                if day > topDay:
+                    topDay = day
                 break
         
         # Check if player has collected a coin
@@ -702,7 +704,7 @@ while True:
         mainClock.tick(FPS)
         
         if quit_to_menu:
-            current_season = "Spring"
+            current_season = seasons[0]
             break
 
     # Stop the game and show the "Game Over" screen.
