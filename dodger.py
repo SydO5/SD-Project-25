@@ -7,20 +7,25 @@ BACKGROUNDCOLOR = (255, 255, 255)
 BACKGROUNDIMAGE = pygame.image.load("back_printemps.png")
 NEXTBACKGROUNDIMAGE = None
 BACKGROUND_ALPHA = 0
-BACKGROUND_FADE_SPEED = 60
+BACKGROUND_FADE_SPEED = 10
 FPS = 60
+
+MUSICVOLUME = 0.5
+SFXVOLUME = 0.5
+volume_changed = False
 
 PLAYERMOVERATE = 8
 JUMPPOWER = 21
 GRAVITY = 1
 PLAYERHEIGHT = 75
 
-BADDIEMINSIZE = 15
-BADDIEMAXSIZE = 25
-BADDIEMINSPEED = 7
-BADDIEMAXSPEED = 10
-ADDNEWBADDIERATE = 15
+BADDIEMINSIZE = 30
+BADDIEMAXSIZE = 50
+BADDIEMINSPEED = 5
+BADDIEMAXSPEED = 8
+ADDNEWBADDIERATE = 30
 
+ADDNEWCOINRATE = 200
 
     # Set up functions.
 # Exit the game.
@@ -49,7 +54,14 @@ def playerHasHitBaddie(playerRect, baddies):
             return b
     return None
 
-# Draw text on the surface.
+# Check if the player has collected a coin.
+def playerHasCollectedCoin(playerRect, coins):
+    for c in coins:
+        if playerRect.colliderect(c["rect"]):
+            return c
+    return None
+
+# Draw a text on the surface.
 def drawText(text, font, surface, x, y, color = TEXTCOLOR, center = False):
     textobj = font.render(text, 1, color)
     textrect = textobj.get_rect()
@@ -66,6 +78,14 @@ def scale_proportionally(image, PLAYERHEIGHT):
     new_width = int(width * scale_factor)
     new_height = int(height * scale_factor)
     return pygame.transform.scale(image, (new_width, new_height))
+
+# Play the music of the menu.
+def playMenuMusic():
+    pygame.mixer.music.load('music_menu.wav')
+    pygame.mixer.music.set_volume(MUSICVOLUME)
+    pygame.mixer.music.play(-1, 0.0, fade_ms = 1000)
+def stopMenuMusic():
+    pygame.mixer.music.stop()
 
 # Set up button class.
 class Button:
@@ -87,6 +107,7 @@ class Button:
 
 # Create main menu with play, character selection, settings and quit buttons.
 def MainMenu():
+    playMenuMusic()
     hovered_play = False
     hovered_select = False
     hovered_settings = False
@@ -102,7 +123,7 @@ def MainMenu():
 
         play_button = Button("Play", WINDOWWIDTH//2, int(WINDOWHEIGHT*0.45), menu_button_font)
         select_button = Button("Select Character", WINDOWWIDTH//2, int(WINDOWHEIGHT*0.60), menu_button_font)
-        settings_button = Button("Settings", WINDOWWIDTH//2, int(WINDOWHEIGHT*0.75), menu_button_font)
+        settings_button = Button("Sound Settings", WINDOWWIDTH//2, int(WINDOWHEIGHT*0.75), menu_button_font)
         quit_button = Button("Quit", WINDOWWIDTH//2, int(WINDOWHEIGHT*0.9), menu_button_font)
         
         rect_play_normal = play_button.draw(windowSurface, (60,42,83))
@@ -145,13 +166,16 @@ def MainMenu():
                 if rect_select.collidepoint(mouse_x, mouse_y):
                     click_sound_menu.play()
                     CharacterSelectionMenu()
+                if rect_settings.collidepoint(mouse_x, mouse_y):
+                    click_sound_menu.play()
+                    SettingsMenu()
                 if rect_quit.collidepoint(mouse_x, mouse_y):
                     terminate()
 
         pygame.display.update()
         mainClock.tick(60)
 
-#Create character selection menu
+# Create character selection menu.
 def CharacterSelectionMenu():
     global playerImages, playerImage, playerRect
     hovered_back = False
@@ -163,28 +187,64 @@ def CharacterSelectionMenu():
     }
     characters = list(all_characters_images.keys())
 
-    characters_buttons = []
-
     space_between = WINDOWWIDTH // (len(characters) + 1)
-    y_position = WINDOWHEIGHT // 1.75
+    y_position = WINDOWHEIGHT // 1.9
 
-    for i, name in enumerate (characters):
-        character_image = all_characters_images[name]["stoic"]
-        character_image_rect = character_image.get_rect(center=((i+1)*space_between, y_position))
-        characters_buttons.append((name, character_image, character_image_rect))
+    characters_buttons = {}
+    for i, name in enumerate(characters):
+        img = all_characters_images[name]["stoic"]
+        rect = img.get_rect(center=((i+1)*space_between, y_position))
+        characters_buttons[name] = {"image": img, "rect": rect, "selected": False}
     
     while True:
         pygame.mouse.set_visible(True)
         windowSurface.blit(MENU_BACKGROUND, (0,0))
-
         drawText('Select your Destiny', character_select_title_font, windowSurface, (WINDOWWIDTH/2), 125, (60,42,83), center = True)
 
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
-        for name, image, rect in characters_buttons:
-            windowSurface.blit(image, rect)
-            drawText(name, character_select_font, windowSurface, rect.centerx, rect.bottom + 40, (254, 237, 181), center = True)
+        for name, data in characters_buttons.items():
+            img = data["image"]
+            rect = data["rect"]
+
+            scale = 2
+            scaled_img = pygame.transform.scale(img, (int(img.get_width()*scale), int(img.get_height()*scale)))
+            scaled_rect = scaled_img.get_rect(center=rect.center)
+            data["scaled_rect"] = scaled_rect
+
+            text_color = (254, 237, 181)
+            if data["selected"]:
+                text_color = (204, 99, 104)
+            scaled_text_surface = character_select_font.render(name, True, text_color)
+            text_rect = scaled_text_surface.get_rect(center=(scaled_rect.centerx, scaled_rect.bottom + 40))
+            data["text_rect"] = text_rect
+
+            hovered = rect.collidepoint(mouse_x, mouse_y) or text_rect.collidepoint(mouse_x, mouse_y)
+
+            if hovered and not data.get("hovered", False):
+                hover_sound_menu.play()
+            data["hovered"] = hovered
         
+            if hovered:
+                scale = 2.2
+            else:
+                scale = 2
+        
+            scaled_img = pygame.transform.scale(img, (int(img.get_width()*scale), int(img.get_height()*scale)))
+            scaled_rect = scaled_img.get_rect(center=rect.center)
+            windowSurface.blit(scaled_img, scaled_rect)
+            data["scaled_rect"] = scaled_rect
+
+            if data["selected"]:
+                color = (204,99,104)
+            elif hovered:
+                color = (252,250,212)
+            else:
+                color = (254, 237, 181)
+        
+            drawText(name, character_select_font, windowSurface, scaled_rect.centerx, scaled_rect.bottom + 40, color, center = True)
+            data["text_rect"] = character_select_font.render(name, True, color).get_rect(center=(scaled_rect.centerx, scaled_rect.bottom + 40))
+
         back_button = Button("Back", 125, WINDOWHEIGHT - 60, character_select_font)
         back_rect = back_button.draw(windowSurface, (254, 237, 181))
         hover_back = back_rect.collidepoint(mouse_x, mouse_y)
@@ -197,20 +257,115 @@ def CharacterSelectionMenu():
             if event.type == QUIT:
                 terminate()
             
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    click_sound_menu.play()
+                    return
             if event.type == MOUSEBUTTONDOWN and event.button == 1:
                 if back_rect.collidepoint(mouse_x, mouse_y):
                     click_sound_menu.play()
                     return
-                for name, image, rect in characters_buttons:
-                    if rect.collidepoint(mouse_x, mouse_y):
+                for name, data in characters_buttons.items():
+                    if data["scaled_rect"].collidepoint(mouse_x, mouse_y) or data["text_rect"].collidepoint(mouse_x, mouse_y):
+                        for n in characters_buttons:
+                            characters_buttons[n]["selected"] = (n == name)
                         playerImages = all_characters_images[name]
                         playerImage = playerImages["stoic"]
                         playerRect = playerImage.get_rect()
                         click_sound_menu.play()
-                        return
-                if rect.back.collidepoint(mouse_x, mouse_y):
+                        break
+        pygame.display.update()
+        mainClock.tick(60)
+
+# Create sound settings menu.
+def SettingsMenu():
+    global MUSICVOLUME, SFXVOLUME, volume_changed
+    hovered_back = False
+
+    slider_width = WINDOWWIDTH // 3
+    slider_height = 20
+    slider_x = WINDOWWIDTH // 2 - slider_width // 2
+    
+    music_y = int(WINDOWHEIGHT * 0.4)
+    sfx_y = int(WINDOWHEIGHT * 0.6)
+    
+    dragging_music = False
+    dragging_sfx = False
+
+    while True:
+        pygame.mouse.set_visible(True)
+        windowSurface.blit(MENU_BACKGROUND, (0,0))
+        drawText('Sound Settings', character_select_title_font, windowSurface, (WINDOWWIDTH/2), 125, (60,42,83), center = True)
+        
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        # Draw Music Slider
+        drawText("Music Volume:", font, windowSurface, slider_x, music_y - 50, (60,42,83))
+        pygame.draw.rect(windowSurface, (60,42,83), (slider_x, music_y, slider_width, slider_height), 0, 5)
+        music_knob_x = slider_x + int(MUSICVOLUME * slider_width)
+        music_knob_rect = pygame.Rect(music_knob_x - 10, music_y - 5, 20, 30)
+        pygame.draw.rect(windowSurface, (204, 99, 104), music_knob_rect, 0, 5)
+
+        # Draw SFX Slider
+        drawText("SFX Volume:", font, windowSurface, slider_x, sfx_y - 50, (60,42,83))
+        pygame.draw.rect(windowSurface, (60,42,83), (slider_x, sfx_y, slider_width, slider_height), 0, 5)
+        sfx_knob_x = slider_x + int(SFXVOLUME * slider_width)
+        sfx_knob_rect = pygame.Rect(sfx_knob_x - 10, sfx_y - 5, 20, 30)
+        pygame.draw.rect(windowSurface, (204, 99, 104), sfx_knob_rect, 0, 5)
+
+        # Draw percentage labels
+        drawText(f"{int(MUSICVOLUME * 100)}%", font, windowSurface, slider_x + slider_width + 20, music_y - 18, (60,42,83))
+        drawText(f"{int(SFXVOLUME * 100)}%", font, windowSurface, slider_x + slider_width + 20, sfx_y - 18, (60,42,83))
+
+        back_button = Button("Back", 125, WINDOWHEIGHT - 60, character_select_font)
+        back_rect = back_button.draw(windowSurface, (254, 237, 181))
+        hover_back = back_rect.collidepoint(mouse_x, mouse_y)
+        if hover_back and not hovered_back:
+            hover_sound_menu.play()
+        hovered_back = hover_back
+        back_rect = back_button.draw(windowSurface, (254, 237, 181), (204,99,104), hover_back)
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                terminate()
+
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
                     click_sound_menu.play()
                     return
+
+            if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                if back_rect.collidepoint(mouse_x, mouse_y):
+                    click_sound_menu.play()
+                    volume_changed = True
+                    return
+                
+                if music_knob_rect.collidepoint(mouse_x, mouse_y) or (slider_x <= mouse_x <= slider_x + slider_width and music_y <= mouse_y <= music_y + slider_height):
+                    dragging_music = True
+                    click_sound_menu.play()
+                elif sfx_knob_rect.collidepoint(mouse_x, mouse_y) or (slider_x <= mouse_x <= slider_x + slider_width and sfx_y <= mouse_y <= sfx_y + slider_height):
+                    dragging_sfx = True
+                    click_sound_menu.play()
+                    
+            if event.type == MOUSEBUTTONUP and event.button == 1:
+                dragging_music = False
+                dragging_sfx = False
+                
+            if event.type == MOUSEMOTION:
+                if dragging_music:
+                    new_x = max(slider_x, min(mouse_x, slider_x + slider_width))
+                    MUSICVOLUME = (new_x - slider_x) / slider_width
+                    pygame.mixer.music.set_volume(MUSICVOLUME)
+
+                if dragging_sfx:
+                    new_x = max(slider_x, min(mouse_x, slider_x + slider_width))
+                    SFXVOLUME = (new_x - slider_x) / slider_width
+
+                    hit_sound.set_volume(SFXVOLUME)
+                    click_sound_menu.set_volume(SFXVOLUME)
+                    hover_sound_menu.set_volume(SFXVOLUME)
+                    gameOverSound.set_volume(SFXVOLUME)
+                    
         pygame.display.update()
         mainClock.tick(60)
 
@@ -233,13 +388,17 @@ BACKGROUNDIMAGE = pygame.transform.scale(BACKGROUNDIMAGE, (WINDOWWIDTH, WINDOWHE
 
 #Make dictionnary with backgrounds adjusted to screen size
 backgrounds = {
-    "printemps": pygame.transform.scale(pygame.image.load("back_printemps.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
-    "ete": pygame.transform.scale(pygame.image.load("back_été.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
-    "automne": pygame.transform.scale(pygame.image.load("back_automne.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
-    "hiver": pygame.transform.scale(pygame.image.load("back_hiver.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "printemps": pygame.transform.scale(pygame.image.load("back_printemps.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "ete": pygame.transform.scale(pygame.image.load("back_été.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "automne": pygame.transform.scale(pygame.image.load("back_automne.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "hiver": pygame.transform.scale(pygame.image.load("back_hiver.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
 }
 
-# Create red filter for when player is hit
+seasons = ["Spring", "Summer", "Autumn", "Winter"]
+season_index = 0
+current_season = seasons[season_index]
+
+# Create red filter when the player hit a baddie.
 red_filter = pygame.Surface((WINDOWWIDTH, WINDOWHEIGHT))
 red_filter.set_alpha(120)
 red_filter.fill((255, 0, 0))
@@ -250,14 +409,21 @@ menu_title_font = pygame.font.Font("8bit_font.ttf", 300)
 menu_button_font = pygame.font.Font("8bit_font.ttf", 150)
 character_select_font = pygame.font.Font("8bit_font.ttf", 100)
 character_select_title_font = pygame.font.Font("8bit_font.ttf", 215)
+season_font = pygame.font.Font("8bit_font.ttf", 100)
+gameover_title_font = pygame.font.Font("8bit_font.ttf", 400)
+gameover_font = pygame.font.Font("8bit_font.ttf", 70)
 
+season_colors = {"Spring": (9,101,76),
+                "Summer": (15,102,109),
+                "Autumn": (169,48,19),
+                "Winter": (28,118,145)}
 
 # Set up sounds.
 gameOverSound = pygame.mixer.Sound('gameover.mp3')
-pygame.mixer.music.load('background.mid')
 hit_sound = pygame.mixer.Sound('hit.mp3')
 click_sound_menu = pygame.mixer.Sound('click_menu.mp3')
 hover_sound_menu = pygame.mixer.Sound('hover_sound.mp3')
+coin_collected_sound = pygame.mixer.Sound("coin.mp3")
 
 # Set up images.
 NinjaImages = {"run_right" : scale_proportionally(pygame.image.load('ninja_run_right.png').convert_alpha(), PLAYERHEIGHT),
@@ -282,12 +448,13 @@ playerImages = NinjaImages
 
 playerImage = playerImages["stoic"]
 playerRect = playerImage.get_rect()
-baddieImage = pygame.image.load('baddie.png').convert_alpha()
+baddieImage = pygame.image.load('baddie.png')
 
-# Show the "Start" screen.
+# Show the Main Menu screen.
 MainMenu()
 
 topScore = 0
+topDay = 0
 while True:
     # Set up the start of the game.
     playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 50)
@@ -298,9 +465,16 @@ while True:
     baddies = []
     baddieAddCounter = 0
     score = 0
+    day = 0
+    day_timer = 0
+    season_index = 0
+    coins = []
+    coinAddCounter = 0
     lives = 3
     moveLeft = moveRight = False
     reverseCheat = slowCheat = False
+    stopMenuMusic()
+    pygame.mixer.music.load('music_game.wav')
     pygame.mixer.music.play(-1, 0.0)
 
     
@@ -308,21 +482,21 @@ while True:
     while True: # The game loop runs while the game part is playing.
         score += 1 # Increase score.
         
-        # Change background (season) based on score
-        if score == 1:
-            BACKGROUNDIMAGE = backgrounds["printemps"]
-        if score == 500 and NEXTBACKGROUNDIMAGE is None:
-            NEXTBACKGROUNDIMAGE = backgrounds["ete"]
-            fade_surface = NEXTBACKGROUNDIMAGE.copy()
-            fade_surface.set_alpha(0)
-            BACKGROUND_ALPHA = 0
-        if score == 1000 and NEXTBACKGROUNDIMAGE is None:
-            NEXTBACKGROUNDIMAGE = backgrounds["automne"]
-            fade_surface = NEXTBACKGROUNDIMAGE.copy()
-            fade_surface.set_alpha(0)
-            BACKGROUND_ALPHA = 0
-        if score == 1500 and NEXTBACKGROUNDIMAGE is None:
-            NEXTBACKGROUNDIMAGE = backgrounds["hiver"]
+        day_timer += 1 # Increase days.
+        if day_timer >= 10:
+            day += 1
+            day_timer = 0
+        
+        # Change background (season) based on number of days (cycle of seasons).
+        if day == 0:
+            BACKGROUNDIMAGE = backgrounds[current_season]
+            baddieImage = baddieImages[current_season]
+
+        if day % 90 == 0 and day != 0 and NEXTBACKGROUNDIMAGE is None:
+            season_index = (season_index + 1) % len(seasons)
+            current_season = seasons[season_index]
+            baddieImage = baddieImages[current_season]
+            NEXTBACKGROUNDIMAGE = backgrounds[current_season]
             fade_surface = NEXTBACKGROUNDIMAGE.copy()
             fade_surface.set_alpha(0)
             BACKGROUND_ALPHA = 0
@@ -350,6 +524,10 @@ while True:
                     PLAYERYSPEED = -JUMPPOWER
                     JUMPSLEFT -= 1
                     on_ground = False
+                if event.key == K_ESCAPE:
+                    click_sound_menu.play()
+                    quit_to_menu = True
+                    break
 
             if event.type == KEYUP:
                 if event.key == K_z:
@@ -358,10 +536,6 @@ while True:
                 if event.key == K_x:
                     slowCheat = False
                     score = 0
-                if event.key == K_ESCAPE:
-                    click_sound_menu.play()
-                    quit_to_menu = True
-                    break
                     
 
                 if event.key == K_LEFT or event.key == K_a:
@@ -371,8 +545,7 @@ while True:
                 if event.key == K_DOWN or event.key == K_s:
                     GRAVITY = 1
 
-        #Change play image based on movement and jumping
-        # Choisir l'image du joueur selon mouvement et saut
+        # Change player image based on movement and jumping.
         if not on_ground:
             if moveLeft:
                 playerImage = playerImages["jump_left"]
@@ -388,25 +561,41 @@ while True:
             else:
                 playerImage = playerImages["stoic"]
 
-        # Add new baddies at the left of the screen, if needed.
+        # Add new baddies at the left of the screen.
         if not reverseCheat and not slowCheat:
             baddieAddCounter += 1
         if baddieAddCounter == ADDNEWBADDIERATE:
             baddieAddCounter = 0
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
-            newBaddie = {'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - baddieSize), baddieSize, baddieSize),
+            spawn_range = 150
+            baddieMinY = max(0, playerRect.centery - spawn_range)
+            baddieMaxY = min(WINDOWHEIGHT - baddieSize, playerRect.centery + spawn_range)
+            baddieY = random.randint(baddieMinY, baddieMaxY)
+            newBaddie = {'rect': pygame.Rect(WINDOWWIDTH, baddieY, baddieSize, baddieSize),
                         'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
                         'surface':pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
                         }
 
             baddies.append(newBaddie)
 
+        # Add coins to rise score.
+        coinAddCounter += 1
+        if coinAddCounter == ADDNEWCOINRATE:
+            coinAddCounter = 0
+            coinSize = 75
+            newCoin = {'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - coinSize), coinSize, coinSize),
+                        'speed': 5,
+                        'surface':pygame.transform.scale(coinImage, (coinSize, coinSize)),
+                        }
+
+            coins.append(newCoin)
+
 
         # Apply gravity to the player.
         PLAYERYSPEED += GRAVITY
         playerRect.y += PLAYERYSPEED
 
-        #So player can't fall below the floor.
+        # Making it impossible for the player to fall below the floor.
         if playerRect.bottom >= WINDOWHEIGHT:
             playerRect.bottom = WINDOWHEIGHT
             PLAYERYSPEED = 0
@@ -427,11 +616,20 @@ while True:
                 b['rect'].move_ip(5, 0)
             elif slowCheat:
                 b['rect'].move_ip(-1, 0)
+        
+        # Move the coins to the left.
+        for c in coins:
+            c['rect'].move_ip(-c['speed'],0)
 
         # Delete baddies that have gone past the left of the screen.
         for b in baddies[:]:
             if b['rect'].right < 0:
                 baddies.remove(b)
+        
+        # Delete coins that have gone past the left of the screen.
+        for c in coins[:]:
+            if c['rect'].right < 0:
+                coins.remove(c)
 
         # Draw the game world on the window.     
         if NEXTBACKGROUNDIMAGE:
@@ -448,10 +646,13 @@ while True:
         else:
             windowSurface.blit(BACKGROUNDIMAGE, (0, 0))
 
-        # Draw the score and top score.
-        drawText('Score: %s' % (score), font, windowSurface, 10, 0)
-        drawText('Top Score: %s' % (topScore), font, windowSurface, 10, 40)
-        drawText('Lives: %s' % (lives), font, windowSurface, 10, 80)
+        # Draw the score, top score, current season, days, top days and remaining lives (hearts).
+        drawText('Score : %s' % (score), font, windowSurface, 10, 0, color = season_colors[current_season])
+        drawText('Top Score : %s' % (topScore), font, windowSurface, 10, 40, color = season_colors[current_season])
+        drawText('Top Days : %s' % (topDay), font, windowSurface, 10, 80, color = season_colors[current_season])
+        drawText(f"{current_season} | {day} days", season_font, windowSurface, WINDOWWIDTH/2, 40, center = True, color = season_colors[current_season])
+        for i in range(lives):
+            windowSurface.blit(heartImage, (10 + i * (heartImage.get_width() + 10), WINDOWHEIGHT - heartImage.get_height() - 10))
 
         # Draw the player's rectangle.
         windowSurface.blit(playerImage, playerRect)
@@ -460,9 +661,13 @@ while True:
         for b in baddies:
             windowSurface.blit(b['surface'], b['rect'])
 
+        # Draw each coins.
+        for c in coins:
+            windowSurface.blit(c['surface'], c['rect'])
+
         pygame.display.update()
 
-        # Check if any of the baddies have hit the player.
+        # Check if any of the baddies have hit the player amd if so, remove it and decrease a life.
         if playerHasHitBaddie(playerRect, baddies) is not None:
             lives -= 1
             baddies.remove(playerHasHitBaddie(playerRect, baddies))
@@ -475,28 +680,38 @@ while True:
             if lives <= 0:
                 if score > topScore:
                     topScore = score # set new top score
+                if day > topDay:
+                    topDay = day # set new top day
+                current_season = seasons[0]
                 break
+        
+        # Check if player has collected any coin and if so, remove it and increase score.
+        if playerHasCollectedCoin(playerRect, coins) is not None:
+            coins.remove(playerHasCollectedCoin(playerRect, coins))
+            coin_collected_sound.play()
+            score += 100
 
         mainClock.tick(FPS)
         
         if quit_to_menu:
+            current_season = seasons[0]
             break
 
-    # Stop the game and show the "Game Over" screen.
+    # Stop the game and show the Game Over screen.
     if quit_to_menu:
             pygame.mixer.music.stop()
             MainMenu()
             continue
     elif quit_to_menu == False:
         pygame.mixer.music.stop()
+        
         gameOverSound.play(fade_ms = 1500)
 
         windowSurface.blit(GAMEOVER_BACKGROUND, (0, 0))
-        drawText('GAME OVER', menu_title_font, windowSurface, (WINDOWWIDTH/6.5), 100, (0, 0, 0))   
-        drawText('Enter if you dare to play again...', font, windowSurface, (WINDOWWIDTH/3.5), (WINDOWHEIGHT / 2), color = (255, 255, 255))
-        drawText('If you are not brave enough escape...', font, windowSurface, (WINDOWWIDTH/3.75), (WINDOWHEIGHT/1.5), color = (255, 255, 255))
+        drawText('GAME OVER', gameover_title_font, windowSurface, (WINDOWWIDTH/2), 220, (15, 8, 5), center = True)   
+        drawText('Enter if you dare to play again...', gameover_font, windowSurface, (WINDOWWIDTH/2), (WINDOWHEIGHT / 2), color = (255, 255, 255), center = True)
+        drawText('If you are not brave enough escape...', gameover_font, windowSurface, (WINDOWWIDTH/2), (WINDOWHEIGHT/1.4), color = (255, 255, 255), center = True)
         pygame.display.update()
-    
         result = waitForPlayerToPressKey()
         gameOverSound.stop()
         if result == "menu":
