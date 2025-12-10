@@ -593,7 +593,7 @@ while True:
         coinAddCounter += 1
         if coinAddCounter == ADDNEWCOINRATE:
             coinAddCounter = 0
-            coinSize = 50
+            coinSize = 75
             newCoin = {'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - coinSize), coinSize, coinSize),
                         'speed': 5,
                         'surface':pygame.transform.scale(coinImage, (coinSize, coinSize)),
