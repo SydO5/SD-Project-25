@@ -61,7 +61,7 @@ def playerHasCollectedCoin(playerRect, coins):
             return c
     return None
 
-# Draw text on the surface.
+# Draw a text on the surface.
 def drawText(text, font, surface, x, y, color = TEXTCOLOR, center = False):
     textobj = font.render(text, 1, color)
     textrect = textobj.get_rect()
@@ -78,7 +78,8 @@ def scale_proportionally(image, PLAYERHEIGHT):
     new_width = int(width * scale_factor)
     new_height = int(height * scale_factor)
     return pygame.transform.scale(image, (new_width, new_height))
-# Music menu.
+
+# Play the music of the menu.
 def playMenuMusic():
     pygame.mixer.music.load('music_menu.wav')
     pygame.mixer.music.set_volume(MUSICVOLUME)
@@ -174,7 +175,7 @@ def MainMenu():
         pygame.display.update()
         mainClock.tick(60)
 
-#Create character selection menu
+# Create character selection menu.
 def CharacterSelectionMenu():
     global playerImages, playerImage, playerRect
     hovered_back = False
@@ -397,7 +398,7 @@ seasons = ["Spring", "Summer", "Autumn", "Winter"]
 season_index = 0
 current_season = seasons[season_index]
 
-# Create red filter for when player is hit
+# Create red filter when the player hit a baddie.
 red_filter = pygame.Surface((WINDOWWIDTH, WINDOWHEIGHT))
 red_filter.set_alpha(120)
 red_filter.fill((255, 0, 0))
@@ -460,7 +461,7 @@ heartImage = pygame.transform.scale(heartImage, (80, 80))
 
 coinImage = pygame.image.load('coin.png').convert_alpha()
 
-# Show the "Start" screen.
+# Show the Main Menu screen.
 MainMenu()
 
 topScore = 0
@@ -492,12 +493,12 @@ while True:
     while True: # The game loop runs while the game part is playing.
         score += 1 # Increase score.
         
-        day_timer += 1
+        day_timer += 1 # Increase days.
         if day_timer >= 10:
             day += 1
             day_timer = 0
         
-        # Change background (season) based on days
+        # Change background (season) based on number of days (cycle of seasons).
         if day == 0:
             BACKGROUNDIMAGE = backgrounds[current_season]
             baddieImage = baddieImages[current_season]
@@ -555,8 +556,7 @@ while True:
                 if event.key == K_DOWN or event.key == K_s:
                     GRAVITY = 1
 
-        #Change play image based on movement and jumping
-        # Choisir l'image du joueur selon mouvement et saut
+        # Change player image based on movement and jumping.
         if not on_ground:
             if moveLeft:
                 playerImage = playerImages["jump_left"]
@@ -572,7 +572,7 @@ while True:
             else:
                 playerImage = playerImages["stoic"]
 
-        # Add new baddies at the left of the screen, if needed.
+        # Add new baddies at the left of the screen.
         if not reverseCheat and not slowCheat:
             baddieAddCounter += 1
         if baddieAddCounter == ADDNEWBADDIERATE:
@@ -606,7 +606,7 @@ while True:
         PLAYERYSPEED += GRAVITY
         playerRect.y += PLAYERYSPEED
 
-        #So player can't fall below the floor.
+        # Making it impossible for the player to fall below the floor.
         if playerRect.bottom >= WINDOWHEIGHT:
             playerRect.bottom = WINDOWHEIGHT
             PLAYERYSPEED = 0
@@ -657,7 +657,7 @@ while True:
         else:
             windowSurface.blit(BACKGROUNDIMAGE, (0, 0))
 
-        # Draw the score, top score and remaining lives.
+        # Draw the score, top score, current season, days, top days and remaining lives (hearts).
         drawText('Score : %s' % (score), font, windowSurface, 10, 0, color = season_colors[current_season])
         drawText('Top Score : %s' % (topScore), font, windowSurface, 10, 40, color = season_colors[current_season])
         drawText('Top Days : %s' % (topDay), font, windowSurface, 10, 80, color = season_colors[current_season])
@@ -672,13 +672,13 @@ while True:
         for b in baddies:
             windowSurface.blit(b['surface'], b['rect'])
 
-        # Draw coins
+        # Draw each coins.
         for c in coins:
             windowSurface.blit(c['surface'], c['rect'])
 
         pygame.display.update()
 
-        # Check if any of the baddies have hit the player.
+        # Check if any of the baddies have hit the player amd if so, remove it and decrease a life.
         if playerHasHitBaddie(playerRect, baddies) is not None:
             lives -= 1
             baddies.remove(playerHasHitBaddie(playerRect, baddies))
@@ -692,11 +692,11 @@ while True:
                 if score > topScore:
                     topScore = score # set new top score
                 if day > topDay:
-                    topDay = day
+                    topDay = day # set new top day
                 current_season = seasons[0]
                 break
         
-        # Check if player has collected a coin
+        # Check if player has collected any coin and if so, remove it and increase score.
         if playerHasCollectedCoin(playerRect, coins) is not None:
             coins.remove(playerHasCollectedCoin(playerRect, coins))
             coin_collected_sound.play()
@@ -708,7 +708,7 @@ while True:
             current_season = seasons[0]
             break
 
-    # Stop the game and show the "Game Over" screen.
+    # Stop the game and show the Game Over screen.
     if quit_to_menu:
             pygame.mixer.music.stop()
             MainMenu()
