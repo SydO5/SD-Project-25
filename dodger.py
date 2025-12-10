@@ -15,15 +15,15 @@ SFXVOLUME = 0.5
 volume_changed = False
 
 PLAYERMOVERATE = 8
-JUMPPOWER = 21
+JUMPPOWER = 25
 GRAVITY = 1
-PLAYERHEIGHT = 75
+PLAYERHEIGHT = 200
 
-BADDIEMINSIZE = 30
-BADDIEMAXSIZE = 50
+BADDIEMINSIZE = 50
+BADDIEMAXSIZE = 100
 BADDIEMINSPEED = 5
 BADDIEMAXSPEED = 8
-ADDNEWBADDIERATE = 30
+ADDNEWBADDIERATE = 50
 
 ADDNEWCOINRATE = 200
 
@@ -398,6 +398,23 @@ seasons = ["Spring", "Summer", "Autumn", "Winter"]
 season_index = 0
 current_season = seasons[season_index]
 
+Spring1 = pygame.mixer.Sound("Spring 1.wav")
+Summer1 = pygame.mixer.Sound("Summer 1.wav")
+Autumn1 = pygame.mixer.Sound("Autumn 1.wav")
+Winter1 = pygame.mixer.Sound("Winter 1.wav")
+Spring2 = pygame.mixer.Sound("Spring 2.wav")
+Summer2 = pygame.mixer.Sound("Summer 2.wav")
+Autumn2 = pygame.mixer.Sound("Autumn 2.wav")
+Winter2 = pygame.mixer.Sound("Winter 2.wav")
+
+musics = [Spring1,Summer1,Autumn1,Winter1,Spring2,Summer2,Autumn2,Winter2]
+
+transi = pygame.mixer.Sound("Transition.wav")
+
+def play_music(index):
+    musics[index].play
+transition_playing = False
+
 # Create red filter when the player hit a baddie.
 red_filter = pygame.Surface((WINDOWWIDTH, WINDOWHEIGHT))
 red_filter.set_alpha(120)
@@ -448,7 +465,18 @@ playerImages = NinjaImages
 
 playerImage = playerImages["stoic"]
 playerRect = playerImage.get_rect()
-baddieImage = pygame.image.load('baddie.png')
+
+baddieImages = {"Spring": pygame.image.load('thorn.png').convert_alpha(),
+                "Summer": pygame.image.load('flame.png').convert_alpha(),
+                "Autumn": pygame.image.load('leaf.png').convert_alpha(),
+                "Winter": pygame.image.load('ice.png').convert_alpha()}
+
+baddieImage = baddieImages[current_season]
+
+heartImage = pygame.image.load('heart.png').convert_alpha()
+heartImage = pygame.transform.scale(heartImage, (80, 80))
+
+coinImage = pygame.image.load('coin.png').convert_alpha()
 
 # Show the Main Menu screen.
 MainMenu()
@@ -474,10 +502,8 @@ while True:
     moveLeft = moveRight = False
     reverseCheat = slowCheat = False
     stopMenuMusic()
-    pygame.mixer.music.load('music_game.wav')
-    pygame.mixer.music.play(-1, 0.0)
-
-    
+    current_index = 0
+    musics[current_index].play(-1)
 
     while True: # The game loop runs while the game part is playing.
         score += 1 # Increase score.
@@ -487,6 +513,17 @@ while True:
             day += 1
             day_timer = 0
         
+        #changing music with seasons
+        if day % 90 == 0 and not transition_playing and day != 0:
+            pygame.mixer.stop()
+            transi.play()
+            transition_playing = True
+
+        if transition_playing and not pygame.mixer.get_busy():
+            current_index = (current_index + 1) % len(musics)
+            musics[current_index].play(-1)
+            transition_playing = False
+
         # Change background (season) based on number of days (cycle of seasons).
         if day == 0:
             BACKGROUNDIMAGE = backgrounds[current_season]
@@ -678,19 +715,18 @@ while True:
             pygame.time.wait(50)
 
             if lives <= 0:
+                pygame.mixer.stop()
                 if score > topScore:
                     topScore = score # set new top score
                 if day > topDay:
                     topDay = day # set new top day
                 current_season = seasons[0]
                 break
-        
         # Check if player has collected any coin and if so, remove it and increase score.
         if playerHasCollectedCoin(playerRect, coins) is not None:
             coins.remove(playerHasCollectedCoin(playerRect, coins))
             coin_collected_sound.play()
             score += 100
-
         mainClock.tick(FPS)
         
         if quit_to_menu:
