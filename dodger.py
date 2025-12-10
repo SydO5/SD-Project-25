@@ -694,6 +694,9 @@ while True:
                 if day > topDay:
                     topDay = day # set new top day
                 current_season = seasons[0]
+                BACKGROUNDIMAGE = backgrounds[current_season]
+                NEXTBACKGROUNDIMAGE = None
+                BACKGROUND_ALPHA = 0
                 break
         
         # Check if player has collected any coin and if so, remove it and increase score.
