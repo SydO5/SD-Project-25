@@ -664,11 +664,11 @@ while True:
                 baddie_surface = followerBaddieImage
             
             newBaddie = {
-                'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - FLOORHEIGHT - baddieSize), baddieSize, baddieSize),
-                'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
-                'surface': pygame.transform.scale(baddie_surface, (baddieSize, baddieSize)),
-                'is_follower': is_follower,
-                'follow_timer': timer_value
+                "rect": pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - FLOORHEIGHT - baddieSize), baddieSize, baddieSize),
+                "speed": random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
+                "surface": pygame.transform.scale(baddie_surface, (baddieSize, baddieSize)),
+                "is_follower": is_follower,
+                "follow_timer": timer_value
             }
 
             baddies.append(newBaddie)
@@ -747,21 +747,21 @@ while True:
         # Move the baddies to the left.
         for b in baddies:
             if not slowTime:
-                move_x = -b['speed']
+                move_x = -b["speed"]
                 move_y = 0
                 
-                if b['is_follower'] and b['follow_timer'] > 0:
-                    b['follow_timer'] -= 1
-                    diff_y = playerRect.centery - b['rect'].centery
+                if b["is_follower"] and b["follow_timer"] > 0:
+                    b["follow_timer"] -= 1
+                    diff_y = playerRect.centery - b["rect"].centery
                     move_y = diff_y * FOLLOWSPEEDFACTOR
                     
-                    if move_y > b['speed']: move_y = b['speed']
-                    if move_y < -b['speed']: move_y = -b['speed']
+                    if move_y > b["speed"]: move_y = b["speed"]
+                    if move_y < -b["speed"]: move_y = -b["speed"]
                 
-                b['rect'].move_ip(move_x, int(move_y))
+                b["rect"].move_ip(move_x, int(move_y))
 
             elif slowTime:
-                b['rect'].move_ip(-1, 0)
+                b["rect"].move_ip(-1, 0)
         
         # Move the coins to the left.
         for c in coins:
