@@ -532,7 +532,7 @@ while True:
     platformAddCounter = 0
 
     moveLeft = moveRight = False
-    reverseCheat = slowCheat = False
+    slowCheat = False
 
     stopMenuMusic()
     pygame.mixer.music.load('music_game.wav')
@@ -569,10 +569,6 @@ while True:
                 terminate()
 
             if event.type == KEYDOWN:
-                if event.key == K_z:
-                    reverseCheat = True
-                if event.key == K_x:
-                    slowCheat = True
                 if event.key == K_LEFT or event.key == K_a:
                     moveRight = False
                     moveLeft = True
@@ -594,14 +590,6 @@ while True:
                     break
 
             if event.type == KEYUP:
-                if event.key == K_z:
-                    reverseCheat = False
-                    score = 0
-                if event.key == K_x:
-                    slowCheat = False
-                    score = 0
-                    
-
                 if event.key == K_LEFT or event.key == K_a:
                     moveLeft = False
                 if event.key == K_RIGHT or event.key == K_d:
@@ -627,7 +615,6 @@ while True:
                 playerImage = playerImages["stoic"]
 
         # Add new baddies at the right of the screen.
-        if not reverseCheat and not slowCheat:
             baddieAddCounter += 1
         if baddieAddCounter == ADDNEWBADDIERATE:
             baddieAddCounter = 0
@@ -701,10 +688,8 @@ while True:
 
         # Move the baddies to the left.
         for b in baddies:
-            if not reverseCheat and not slowCheat:
+            if not slowCheat:
                 b['rect'].move_ip(-b['speed'],0)
-            elif reverseCheat:
-                b['rect'].move_ip(5, 0)
             elif slowCheat:
                 b['rect'].move_ip(-1, 0)
         
