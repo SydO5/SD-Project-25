@@ -758,7 +758,9 @@ while True:
         drawText('Top Days : %s' % (topDay), font, windowSurface, 10, 80, color = season_colors[current_season])
         drawText(f"{current_season} | {day} days", season_font, windowSurface, WINDOWWIDTH/2, 40, center = True, color = season_colors[current_season])
         for i in range(lives):
-            windowSurface.blit(heartImage, (10 + i * (heartImage.get_width() + 10), WINDOWHEIGHT - heartImage.get_height() - 10))
+            x = WINDOWWIDTH - (i + 1) * (heartImage.get_width() + 10)
+            y = 10
+            windowSurface.blit(heartImage, (x,y))
 
         # Draw the player's rectangle.
         windowSurface.blit(playerImage, playerRect)
