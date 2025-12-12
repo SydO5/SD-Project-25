@@ -19,11 +19,15 @@ JUMPPOWER = 25
 GRAVITY = 1
 PLAYERHEIGHT = 200
 
-BADDIEMINSIZE = 50
+BADDIEMINSIZE = 75
 BADDIEMAXSIZE = 100
 BADDIEMINSPEED = 5
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 50
+
+FOLLOWDURATION = 200
+FOLLOWCHANCE = 0.3
+FOLLOWSPEEDFACTOR = 0.15
 
 ADDNEWCOINRATE = 200
 ADDNEWHOURGLASSRATE = 800
@@ -490,6 +494,14 @@ baddieImages = {"Spring": pygame.image.load("thorn.png").convert_alpha(),
                 "Winter": pygame.image.load("ice.png").convert_alpha()}
 baddieImage = baddieImages[current_season]
 
+followerBaddieImages = {
+    "Spring": pygame.image.load("thorn_following.png").convert_alpha(),
+    "Summer": pygame.image.load("flame_following.png").convert_alpha(),
+    "Autumn": pygame.image.load("leaf_following.png").convert_alpha(),
+    "Winter": pygame.image.load("ice_following.png").convert_alpha()
+}
+followerBaddieImage = followerBaddieImages[current_season]
+
 heartImage = pygame.image.load("heart.png").convert_alpha()
 heartImage = pygame.transform.scale(heartImage, (80, 80))
 
@@ -569,6 +581,7 @@ while True:
         if day == 0:
             BACKGROUNDIMAGE = backgrounds[current_season]
             baddieImage = baddieImages[current_season]
+            followerBaddieImage = followerBaddieImages[current_season]
             platformImage = platformImages[current_season]
             floorImage = floorImages[current_season]
 
@@ -576,6 +589,7 @@ while True:
             season_index = (season_index + 1) % len(seasons)
             current_season = seasons[season_index]
             baddieImage = baddieImages[current_season]
+            followerBaddieImage = followerBaddieImages[current_season]
             platformImage = platformImages[current_season]
             floorImage = floorImages[current_season]
             NEXTBACKGROUNDIMAGE = backgrounds[current_season]
@@ -634,23 +648,34 @@ while True:
                 playerImage = playerImages["stoic"]
 
         # Add new baddies at the right of the screen.
+        if not slowTime:
             baddieAddCounter += 1
         if baddieAddCounter == ADDNEWBADDIERATE:
             baddieAddCounter = 0
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
-            spawn_range = 150
-            baddieMinY = max(0, playerRect.centery - spawn_range)
-            baddieMaxY = min(WINDOWHEIGHT - baddieSize, playerRect.centery + spawn_range)
-            baddieY = random.randint(baddieMinY, baddieMaxY)
-            newBaddie = {"rect": pygame.Rect(WINDOWWIDTH, baddieY, baddieSize, baddieSize),
-                        "speed": random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
-                        "surface": pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
-                        }
+            
+            is_follower = False
+            baddie_surface = baddieImage
+            timer_value = 0
+            
+            if random.random() < FOLLOWCHANCE:
+                is_follower = True
+                timer_value = FOLLOWDURATION 
+                baddie_surface = followerBaddieImage
+            
+            newBaddie = {
+                'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - FLOORHEIGHT - baddieSize), baddieSize, baddieSize),
+                'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
+                'surface': pygame.transform.scale(baddie_surface, (baddieSize, baddieSize)),
+                'is_follower': is_follower,
+                'follow_timer': timer_value
+            }
 
             baddies.append(newBaddie)
 
         # Add coins to rise score.
-        coinAddCounter += 1
+        if not slowTime:
+            coinAddCounter += 1
         if coinAddCounter == ADDNEWCOINRATE:
             coinAddCounter = 0
             coinSize = 75
@@ -662,7 +687,8 @@ while True:
             coins.append(newCoin)
         
         # Add hourglasses to slow time.
-        hourglassAddCounter += 1
+        if not slowTime:
+            hourglassAddCounter += 1
         if hourglassAddCounter == ADDNEWHOURGLASSRATE:
             hourglassAddCounter = 0
             hourglassWidth = 45
@@ -674,7 +700,8 @@ while True:
             hourglasses.append(newHourglass)
         
         # Add platforms at the right of the screen.
-        platformAddCounter += 1
+        if not slowTime:
+            platformAddCounter += 1
         if platformAddCounter == ADDNEWPLATFORMRATE:
             platformAddCounter = 0
             platform_width = random.randint(PLATFORMMINWIDTH, PLATFORMMAXWIDTH)
@@ -720,9 +747,21 @@ while True:
         # Move the baddies to the left.
         for b in baddies:
             if not slowTime:
-                b["rect"].move_ip(-b["speed"],0)
+                move_x = -b['speed']
+                move_y = 0
+                
+                if b['is_follower'] and b['follow_timer'] > 0:
+                    b['follow_timer'] -= 1
+                    diff_y = playerRect.centery - b['rect'].centery
+                    move_y = diff_y * FOLLOWSPEEDFACTOR
+                    
+                    if move_y > b['speed']: move_y = b['speed']
+                    if move_y < -b['speed']: move_y = -b['speed']
+                
+                b['rect'].move_ip(move_x, int(move_y))
+
             elif slowTime:
-                b["rect"].move_ip(-1, 0)
+                b['rect'].move_ip(-1, 0)
         
         # Move the coins to the left.
         for c in coins:
