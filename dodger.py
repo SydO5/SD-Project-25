@@ -666,7 +666,7 @@ while True:
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
             spawn_range = 150
             baddieMinY = max(0, playerRect.centery - spawn_range)
-            baddieMaxY = min(WINDOWHEIGHT - baddieSize, playerRect.centery + spawn_range)
+            baddieMaxY = min(WINDOWHEIGHT - FLOORHEIGHT - baddieSize, playerRect.centery + spawn_range)
             baddieY = random.randint(baddieMinY, baddieMaxY)
             
             is_follower = False
@@ -694,7 +694,7 @@ while True:
         if coinAddCounter == ADDNEWCOINRATE:
             coinAddCounter = 0
             coinSize = 75
-            newCoin = Item(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - coinSize), coinSize, coinSize, coinImage, 5, "coin")
+            newCoin = Item(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - FLOORHEIGHT - coinSize), coinSize, coinSize, coinImage, 5, "coin")
             coins.append(newCoin)
         
         # Add hourglasses to slow time.
@@ -704,7 +704,7 @@ while True:
             hourglassAddCounter = 0
             hourglassWidth = 45
             hourglassHeight = 55
-            newHourglass = Item(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - hourglassHeight), hourglassWidth, hourglassHeight, hourglassImage, 5, "hourglass")
+            newHourglass = Item(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - FLOORHEIGHT - hourglassHeight), hourglassWidth, hourglassHeight, hourglassImage, 5, "hourglass")
             hourglasses.append(newHourglass)
         
         # Add platforms at the right of the screen.
