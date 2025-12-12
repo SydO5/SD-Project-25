@@ -71,6 +71,14 @@ def playerHasCollectedCoin(playerRect, coins):
             return c
     return None
 
+# Check if baddie has hit a platform.
+def baddieHasHitPlatform(platforms, baddies):
+    for b in baddies:
+        for p in platforms:
+            if p["hitbox"].colliderect(b["rect"]):
+                return b
+    return None
+
 # Draw a text on the surface.
 def drawText(text, font, surface, x, y, color = TEXTCOLOR, center = False):
     textobj = font.render(text, 1, color)
@@ -795,6 +803,11 @@ while True:
             coins.remove(playerHasCollectedCoin(playerRect, coins))
             coin_collected_sound.play()
             score += 100
+        
+        # Check if any baddie has hit a platform and if so, remove it.
+        hit_baddie = baddieHasHitPlatform(platforms, baddies)
+        if hit_baddie is not None:
+            baddies.remove(hit_baddie)
 
         mainClock.tick(FPS)
         
