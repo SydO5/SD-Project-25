@@ -25,6 +25,11 @@ BADDIEMINSPEED = 5
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 30
 
+# baddies followers parameters
+FOLLOW_DURATION = 180  # 180 frames = 3 sec
+FOLLOW_CHANCE = 0.3    # chance to spawn a follower baddie
+FOLLOW_SPEED_FACTOR = 0.1 # speed factor towards player
+
 PLATFORMMINWIDTH = 100
 PLATFORMMAXWIDTH = 250
 PLATFORMHEIGHT = 40
@@ -233,7 +238,7 @@ def CharacterSelectionMenu():
                 scale = 2.2
             else:
                 scale = 2
-        
+            
             scaled_img = pygame.transform.scale(img, (int(img.get_width()*scale), int(img.get_height()*scale)))
             scaled_rect = scaled_img.get_rect(center=rect.center)
             windowSurface.blit(scaled_img, scaled_rect)
@@ -415,9 +420,9 @@ gameover_title_font = pygame.font.Font("8bit_font.ttf", 400)
 gameover_font = pygame.font.Font("8bit_font.ttf", 70)
 
 season_colors = {"Spring": (9,101,76),
-                "Summer": (15,102,109),
-                "Autumn": (169,48,19),
-                "Winter": (28,118,145)}
+                 "Summer": (15,102,109),
+                 "Autumn": (169,48,19),
+                 "Winter": (28,118,145)}
 
 # Set up sounds.
 gameOverSound = pygame.mixer.Sound('gameover.mp3')
@@ -454,7 +459,16 @@ baddieImages = {"Spring": pygame.image.load('thorn.png').convert_alpha(),
                 "Autumn": pygame.image.load('leaf.png').convert_alpha(),
                 "Winter": pygame.image.load('ice.png').convert_alpha()}
 
+# dictionnary for follower baddie images
+followerBaddieImages = {
+    "Spring": pygame.image.load('baddie_suiveur_spring.png').convert_alpha(),
+    "Summer": pygame.image.load('baddie_suiveur_summer.png').convert_alpha(),
+    "Autumn": pygame.image.load('baddie_suiveur_autumn.png').convert_alpha(),
+    "Winter": pygame.image.load('baddie_suiveur_winter.png').convert_alpha()
+}
+
 baddieImage = baddieImages[current_season]
+current_follower_image = followerBaddieImages[current_season] # Initialisation
 
 # change platform images
 platformImages = {
@@ -525,11 +539,13 @@ while True:
         if score == 1:
             BACKGROUNDIMAGE = backgrounds[current_season]
             baddieImage = baddieImages[current_season]
+            current_follower_image = followerBaddieImages[current_season] # MAJ image suiveur
             current_platform_image = platformImages[current_season]
             current_floor_image = floorImages[current_season]
         if score == 500 and NEXTBACKGROUNDIMAGE is None:
             current_season = "Summer"
             baddieImage = baddieImages[current_season]
+            current_follower_image = followerBaddieImages[current_season] # MAJ image suiveur
             current_platform_image = platformImages[current_season]
             current_floor_image = floorImages[current_season]
             NEXTBACKGROUNDIMAGE = backgrounds[current_season]
@@ -539,6 +555,7 @@ while True:
         if score == 1000 and NEXTBACKGROUNDIMAGE is None:
             current_season = "Autumn"
             baddieImage = baddieImages[current_season]
+            current_follower_image = followerBaddieImages[current_season] # MAJ image suiveur
             current_platform_image = platformImages[current_season]
             current_floor_image = floorImages[current_season]
             NEXTBACKGROUNDIMAGE = backgrounds[current_season]
@@ -548,6 +565,7 @@ while True:
         if score == 1500 and NEXTBACKGROUNDIMAGE is None:
             current_season = "Winter"
             baddieImage = baddieImages[current_season]
+            current_follower_image = followerBaddieImages[current_season] # MAJ image suiveur
             current_platform_image = platformImages[current_season]
             current_floor_image = floorImages[current_season]
             NEXTBACKGROUNDIMAGE = backgrounds[current_season]
@@ -600,7 +618,7 @@ while True:
                 if event.key == K_RIGHT or event.key == K_d:
                     moveRight = False
                 
-                # --- RELACHEMENT BAS / S ---
+                # release drop down
                 if event.key == K_DOWN or event.key == K_s:
                     GRAVITY = 1
                     drop_down = False 
@@ -627,10 +645,25 @@ while True:
         if baddieAddCounter == ADDNEWBADDIERATE:
             baddieAddCounter = 0
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
-            newBaddie = {'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - FLOORHEIGHT - baddieSize), baddieSize, baddieSize),
-                        'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
-                        'surface':pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
-                        }
+            
+            #for follower baddie logic
+            is_follower = False
+            baddie_surface = baddieImage # Par défaut image normale
+            timer_value = 0 # Par défaut pas de timer
+            
+            # if random chance, make this baddie a follower
+            if random.random() < FOLLOW_CHANCE:
+                is_follower = True
+                timer_value = FOLLOW_DURATION 
+                baddie_surface = current_follower_image 
+            
+            newBaddie = {
+                'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - FLOORHEIGHT - baddieSize), baddieSize, baddieSize),
+                'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
+                'surface': pygame.transform.scale(baddie_surface, (baddieSize, baddieSize)),
+                'is_follower': is_follower,
+                'follow_timer': timer_value
+            }
 
             baddies.append(newBaddie)
 
@@ -697,27 +730,42 @@ while True:
         # Move the baddies to the left.
         for b in baddies:
             if not reverseCheat and not slowCheat:
-                b['rect'].move_ip(-b['speed'],0)
+                move_x = -b['speed']
+                move_y = 0
+                
+                # if baddie is a follower and timer is active
+                if b['is_follower'] and b['follow_timer'] > 0:
+                    b['follow_timer'] -= 1 # On diminue le temps
+                    diff_y = playerRect.centery - b['rect'].centery
+                    move_y = diff_y * FOLLOW_SPEED_FACTOR
+                    
+                    # limiting follower speed
+                    if move_y > b['speed']: move_y = b['speed']
+                    if move_y < -b['speed']: move_y = -b['speed']
+                
+                # apply movement
+                b['rect'].move_ip(move_x, int(move_y))
+                
             elif reverseCheat:
                 b['rect'].move_ip(5, 0)
             elif slowCheat:
                 b['rect'].move_ip(-1, 0)
         
-        # --- DEPLACER LES PLATEFORMES ---
+        # putting platforms movement
         for p in platforms:
              move_speed = -p['speed']
              if reverseCheat: move_speed = 5
              elif slowCheat: move_speed = -1
              
              if not reverseCheat and not slowCheat:
-                p['image_rect'].move_ip(move_speed, 0)
-                p['hitbox_rect'].move_ip(move_speed, 0)
+                 p['image_rect'].move_ip(move_speed, 0)
+                 p['hitbox_rect'].move_ip(move_speed, 0)
              elif reverseCheat:
-                p['image_rect'].move_ip(move_speed, 0)
-                p['hitbox_rect'].move_ip(move_speed, 0)
+                 p['image_rect'].move_ip(move_speed, 0)
+                 p['hitbox_rect'].move_ip(move_speed, 0)
              elif slowCheat:
-                p['image_rect'].move_ip(move_speed, 0)
-                p['hitbox_rect'].move_ip(move_speed, 0)
+                 p['image_rect'].move_ip(move_speed, 0)
+                 p['hitbox_rect'].move_ip(move_speed, 0)
 
 
         # Delete baddies that have gone past the left of the screen.
@@ -745,7 +793,7 @@ while True:
         else:
             windowSurface.blit(BACKGROUNDIMAGE, (0, 0))
         
-        # --- DESSINER LE SOL FIXE ET RÉPÉTÉ ---
+        # putting the floor images repeatedly to cover the width of the screen
         floor_width = current_floor_image.get_width()
         for x in range(0, WINDOWWIDTH + floor_width, floor_width):
              windowSurface.blit(current_floor_image, (x, WINDOWHEIGHT - FLOORHEIGHT))
@@ -757,7 +805,7 @@ while True:
         for i in range(lives):
             windowSurface.blit(heartImage, (10 + i * (heartImage.get_width() + 10), WINDOWHEIGHT - heartImage.get_height() - 10))
 
-        # --- DESSINER PLATEFORMES ---
+        # putting platforms
         for p in platforms:
             windowSurface.blit(p['surface'], p['image_rect'])
         
@@ -775,7 +823,7 @@ while True:
             lives -= 1
             baddies.remove(playerHasHitBaddie(playerRect, baddies))
             hit_sound.play()
-    
+        
             windowSurface.blit(red_filter, (0, 0))
             pygame.display.update()
             pygame.time.wait(50)
