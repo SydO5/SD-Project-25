@@ -879,6 +879,7 @@ while True:
             continue
     elif quit_to_menu == False:
         pygame.mixer.music.stop()
+        hourglass_collected_sound.stop()
         
         gameOverSound.play(fade_ms = 1500)
 
