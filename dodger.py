@@ -26,6 +26,7 @@ BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 50
 
 ADDNEWCOINRATE = 200
+ADDNEWHOURGLASSRATE = 800
 
 PLATFORMMINWIDTH = 100
 PLATFORMMAXWIDTH = 250
@@ -60,7 +61,7 @@ def waitForPlayerToPressKey():
 # Check if the player has hit a baddie.
 def playerHasHitBaddie(playerRect, baddies):
     for b in baddies:
-        if playerRect.colliderect(b['rect']):
+        if playerRect.colliderect(b["rect"]):
             return b
     return None
 
@@ -69,6 +70,13 @@ def playerHasCollectedCoin(playerRect, coins):
     for c in coins:
         if playerRect.colliderect(c["rect"]):
             return c
+    return None
+
+# Check if the player has collected an hourglass.
+def playerHasCollectedHourglass(playerRect, hourglasses):
+    for h in hourglasses:
+        if playerRect.colliderect(h["rect"]):
+            return h
     return None
 
 # Check if baddie has hit a platform.
@@ -107,7 +115,7 @@ def load_and_scale_floor(image_name):
 
 # Play the music of the menu.
 def playMenuMusic():
-    pygame.mixer.music.load('music_menu.wav')
+    pygame.mixer.music.load("music_menu.wav")
     pygame.mixer.music.set_volume(MUSICVOLUME)
     pygame.mixer.music.play(-1, 0.0, fade_ms = 1000)
 def stopMenuMusic():
@@ -143,7 +151,7 @@ def MainMenu():
         pygame.mouse.set_visible(True)
 
         windowSurface.blit(MENU_BACKGROUND, (0,0))
-        drawText('Season Escape', menu_title_font, windowSurface, (WINDOWWIDTH/2), 125, (60,42,83), center = True)
+        drawText("Season Escape", menu_title_font, windowSurface, (WINDOWWIDTH/2), 125, (60,42,83), center = True)
         
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
@@ -225,7 +233,7 @@ def CharacterSelectionMenu():
     while True:
         pygame.mouse.set_visible(True)
         windowSurface.blit(MENU_BACKGROUND, (0,0))
-        drawText('Select your Destiny', character_select_title_font, windowSurface, (WINDOWWIDTH/2), 125, (60,42,83), center = True)
+        drawText("Select your Destiny", character_select_title_font, windowSurface, (WINDOWWIDTH/2), 125, (60,42,83), center = True)
 
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
@@ -321,7 +329,7 @@ def SettingsMenu():
     while True:
         pygame.mouse.set_visible(True)
         windowSurface.blit(MENU_BACKGROUND, (0,0))
-        drawText('Sound Settings', character_select_title_font, windowSurface, (WINDOWWIDTH/2), 125, (60,42,83), center = True)
+        drawText("Sound Settings", character_select_title_font, windowSurface, (WINDOWWIDTH/2), 125, (60,42,83), center = True)
         
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
@@ -401,7 +409,7 @@ pygame.init()
 mainClock = pygame.time.Clock()
 windowSurface = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
 WINDOWWIDTH, WINDOWHEIGHT = windowSurface.get_size()
-pygame.display.set_caption('Dodger')
+pygame.display.set_caption("Dodger")
 
 # Set up the background image for the menu.
 MENU_BACKGROUND = pygame.transform.scale(pygame.image.load("back_menu.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT))
@@ -445,60 +453,62 @@ season_colors = {"Spring": (9,101,76),
                 "Winter": (28,118,145)}
 
 # Set up sounds.
-gameOverSound = pygame.mixer.Sound('gameover.mp3')
-hit_sound = pygame.mixer.Sound('hit.mp3')
-click_sound_menu = pygame.mixer.Sound('click_menu.mp3')
-hover_sound_menu = pygame.mixer.Sound('hover_sound.mp3')
+gameOverSound = pygame.mixer.Sound("gameover.mp3")
+hit_sound = pygame.mixer.Sound("hit.mp3")
+click_sound_menu = pygame.mixer.Sound("click_menu.mp3")
+hover_sound_menu = pygame.mixer.Sound("hover_sound.mp3")
 coin_collected_sound = pygame.mixer.Sound("coin.mp3")
+hourglass_collected_sound = pygame.mixer.Sound("hourglass.mp3")
 
 # Set up images.
-NinjaImages = {"run_right" : scale_proportionally(pygame.image.load('ninja_run_right.png').convert_alpha(), PLAYERHEIGHT),
-                "run_left" : scale_proportionally(pygame.image.load('ninja_run_left.png').convert_alpha(), PLAYERHEIGHT),
-               "jump_right" : scale_proportionally(pygame.image.load('ninja_jump_right.png').convert_alpha(), PLAYERHEIGHT),
-               "jump_left" : scale_proportionally(pygame.image.load('ninja_jump_left.png').convert_alpha(), PLAYERHEIGHT),
-               "stoic": scale_proportionally(pygame.image.load('ninja_stoic.png').convert_alpha(), PLAYERHEIGHT)}
+NinjaImages = {"run_right" : scale_proportionally(pygame.image.load("ninja_run_right.png").convert_alpha(), PLAYERHEIGHT),
+                "run_left" : scale_proportionally(pygame.image.load("ninja_run_left.png").convert_alpha(), PLAYERHEIGHT),
+               "jump_right" : scale_proportionally(pygame.image.load("ninja_jump_right.png").convert_alpha(), PLAYERHEIGHT),
+               "jump_left" : scale_proportionally(pygame.image.load("ninja_jump_left.png").convert_alpha(), PLAYERHEIGHT),
+               "stoic": scale_proportionally(pygame.image.load("ninja_stoic.png").convert_alpha(), PLAYERHEIGHT)}
 
-AdventurerImages = {"run_right" : scale_proportionally(pygame.image.load('adventurer_run_right.png').convert_alpha(), PLAYERHEIGHT),
-                "run_left" : scale_proportionally(pygame.image.load('adventurer_run_left.png').convert_alpha(), PLAYERHEIGHT),
-               "jump_right" : scale_proportionally(pygame.image.load('adventurer_jump_right.png').convert_alpha(), PLAYERHEIGHT),
-               "jump_left" : scale_proportionally(pygame.image.load('adventurer_jump_left.png').convert_alpha(), PLAYERHEIGHT),
-               "stoic": scale_proportionally(pygame.image.load('adventurer_stoic.png').convert_alpha(), PLAYERHEIGHT)}
+AdventurerImages = {"run_right" : scale_proportionally(pygame.image.load("adventurer_run_right.png").convert_alpha(), PLAYERHEIGHT),
+                "run_left" : scale_proportionally(pygame.image.load("adventurer_run_left.png").convert_alpha(), PLAYERHEIGHT),
+               "jump_right" : scale_proportionally(pygame.image.load("adventurer_jump_right.png").convert_alpha(), PLAYERHEIGHT),
+               "jump_left" : scale_proportionally(pygame.image.load("adventurer_jump_left.png").convert_alpha(), PLAYERHEIGHT),
+               "stoic": scale_proportionally(pygame.image.load("adventurer_stoic.png").convert_alpha(), PLAYERHEIGHT)}
 
-KnightImages = {"run_right" : scale_proportionally(pygame.image.load('knight_run_right.png').convert_alpha(), PLAYERHEIGHT),
-                "run_left" : scale_proportionally(pygame.image.load('knight_run_left.png').convert_alpha(), PLAYERHEIGHT),
-               "jump_right" : scale_proportionally(pygame.image.load('knight_jump_right.png').convert_alpha(), PLAYERHEIGHT),
-               "jump_left" : scale_proportionally(pygame.image.load('knight_jump_left.png').convert_alpha(), PLAYERHEIGHT),
-               "stoic": scale_proportionally(pygame.image.load('knight_stoic.png').convert_alpha(), PLAYERHEIGHT)}
+KnightImages = {"run_right" : scale_proportionally(pygame.image.load("knight_run_right.png").convert_alpha(), PLAYERHEIGHT),
+                "run_left" : scale_proportionally(pygame.image.load("knight_run_left.png").convert_alpha(), PLAYERHEIGHT),
+               "jump_right" : scale_proportionally(pygame.image.load("knight_jump_right.png").convert_alpha(), PLAYERHEIGHT),
+               "jump_left" : scale_proportionally(pygame.image.load("knight_jump_left.png").convert_alpha(), PLAYERHEIGHT),
+               "stoic": scale_proportionally(pygame.image.load("knight_stoic.png").convert_alpha(), PLAYERHEIGHT)}
 
 playerImages = NinjaImages
 
 playerImage = playerImages["stoic"]
 playerRect = playerImage.get_rect()
 
-baddieImages = {"Spring": pygame.image.load('thorn.png').convert_alpha(),
-                "Summer": pygame.image.load('flame.png').convert_alpha(),
-                "Autumn": pygame.image.load('leaf.png').convert_alpha(),
-                "Winter": pygame.image.load('ice.png').convert_alpha()}
+baddieImages = {"Spring": pygame.image.load("thorn.png").convert_alpha(),
+                "Summer": pygame.image.load("flame.png").convert_alpha(),
+                "Autumn": pygame.image.load("leaf.png").convert_alpha(),
+                "Winter": pygame.image.load("ice.png").convert_alpha()}
 baddieImage = baddieImages[current_season]
 
-heartImage = pygame.image.load('heart.png').convert_alpha()
+heartImage = pygame.image.load("heart.png").convert_alpha()
 heartImage = pygame.transform.scale(heartImage, (80, 80))
 
-coinImage = pygame.image.load('coin.png').convert_alpha()
+coinImage = pygame.image.load("coin.png").convert_alpha()
+hourglassImage = pygame.image.load("hourglass.png").convert_alpha()
 
 platformImages = {
-    "Spring": pygame.image.load('platform_spring.png').convert_alpha(),
-    "Summer": pygame.image.load('platform_summer.png').convert_alpha(),
-    "Autumn": pygame.image.load('platform_autumn.png').convert_alpha(),
-    "Winter": pygame.image.load('platform_winter.png').convert_alpha()
+    "Spring": pygame.image.load("platform_spring.png").convert_alpha(),
+    "Summer": pygame.image.load("platform_summer.png").convert_alpha(),
+    "Autumn": pygame.image.load("platform_autumn.png").convert_alpha(),
+    "Winter": pygame.image.load("platform_winter.png").convert_alpha()
 }
 platformImage = platformImages[current_season]
 
 floorImages = {
-    "Spring": load_and_scale_floor('floor_spring.png'),
-    "Summer": load_and_scale_floor('floor_summer.png'),
-    "Autumn": load_and_scale_floor('floor_autumn.png'),
-    "Winter": load_and_scale_floor('floor_winter.png')
+    "Spring": load_and_scale_floor("floor_spring.png"),
+    "Summer": load_and_scale_floor("floor_summer.png"),
+    "Autumn": load_and_scale_floor("floor_autumn.png"),
+    "Winter": load_and_scale_floor("floor_winter.png")
 }
 FloorImage = floorImages[current_season]
 
@@ -528,23 +538,32 @@ while True:
     coins = []
     coinAddCounter = 0
 
+    hourglasses = []
+    hourglassAddCounter = 0
+    slowTime = False
+    slowTimer = 0
+
     platforms = []
     platformAddCounter = 0
 
     moveLeft = moveRight = False
-    slowCheat = False
 
     stopMenuMusic()
-    pygame.mixer.music.load('music_game.wav')
+    pygame.mixer.music.load("music_game.wav")
     pygame.mixer.music.play(-1, 0.0)
 
     while True: # The game loop runs while the game part is playing.
         score += 1 # Increase score.
         
         day_timer += 1 # Increase days.
-        if day_timer >= 10:
-            day += 1
-            day_timer = 0
+        if slowTime:
+            if day_timer >= 40:
+                day += 1
+                day_timer = 0
+        else:
+            if day_timer >= 20:
+                day += 1
+                day_timer = 0
         
         # Change background (season) based on number of days (cycle of seasons).
         if day == 0:
@@ -642,6 +661,18 @@ while True:
 
             coins.append(newCoin)
         
+        # Add hourglasses to slow time.
+        hourglassAddCounter += 1
+        if hourglassAddCounter == ADDNEWHOURGLASSRATE:
+            hourglassAddCounter = 0
+            hourglassWidth = 45
+            hourglassHeight = 55
+            newHourglass = {"rect": pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - hourglassHeight), hourglassWidth, hourglassHeight),
+                        "speed": 5,
+                        "surface":pygame.transform.scale(hourglassImage, (hourglassWidth, hourglassHeight)),
+                        }
+            hourglasses.append(newHourglass)
+        
         # Add platforms at the right of the screen.
         platformAddCounter += 1
         if platformAddCounter == ADDNEWPLATFORMRATE:
@@ -688,29 +719,48 @@ while True:
 
         # Move the baddies to the left.
         for b in baddies:
-            if not slowCheat:
-                b['rect'].move_ip(-b['speed'],0)
-            elif slowCheat:
-                b['rect'].move_ip(-1, 0)
+            if not slowTime:
+                b["rect"].move_ip(-b["speed"],0)
+            elif slowTime:
+                b["rect"].move_ip(-1, 0)
         
         # Move the coins to the left.
         for c in coins:
-            c['rect'].move_ip(-c['speed'],0)
+            if not slowTime:
+                c["rect"].move_ip(-c["speed"],0)
+            elif slowTime:
+                c["rect"].move_ip(-1, 0)
+        
+        # Move the hourglasses to the left.
+        for h in hourglasses:
+            if not slowTime:
+                h["rect"].move_ip(-h["speed"],0)
+            elif slowTime:
+                h["rect"].move_ip(-1, 0)
 
         # Move the platforms to the left.
         for p in platforms:
-            p["rect"].move_ip(-p["speed"], 0)
-            p["hitbox"].move_ip(-p["speed"], 0)
+            if not slowTime:
+                p["rect"].move_ip(-p["speed"], 0)
+                p["hitbox"].move_ip(-p["speed"], 0)
+            elif slowTime:
+                p["rect"].move_ip(-1, 0)
+                p["hitbox"].move_ip(-1, 0)
 
         # Delete baddies that have gone past the left of the screen.
         for b in baddies[:]:
-            if b['rect'].right < 0:
+            if b["rect"].right < 0:
                 baddies.remove(b)
         
         # Delete coins that have gone past the left of the screen.
         for c in coins[:]:
-            if c['rect'].right < 0:
+            if c["rect"].right < 0:
                 coins.remove(c)
+        
+        # Delete hourglasses that have gone past the left of the screen.
+        for h in hourglasses[:]:
+            if h["rect"].right < 0:
+                hourglasses.remove(h)
         
         # Delete platforms that have gone past the left of the screen.
         for p in platforms[:]:
@@ -738,25 +788,29 @@ while True:
              windowSurface.blit(floorImage, (x, WINDOWHEIGHT - FLOORHEIGHT))
 
         # Draw the score, top score, current season, days, top days and remaining lives (hearts).
-        drawText('Score : %s' % (score), font, windowSurface, 10, 0, color = season_colors[current_season])
-        drawText('Top Score : %s' % (topScore), font, windowSurface, 10, 40, color = season_colors[current_season])
-        drawText('Top Days : %s' % (topDay), font, windowSurface, 10, 80, color = season_colors[current_season])
+        drawText("Score : %s" % (score), font, windowSurface, 10, 0, color = season_colors[current_season])
+        drawText("Top Score : %s" % (topScore), font, windowSurface, 10, 40, color = season_colors[current_season])
+        drawText("Top Days : %s" % (topDay), font, windowSurface, 10, 80, color = season_colors[current_season])
         drawText(f"{current_season} | {day} days", season_font, windowSurface, WINDOWWIDTH/2, 40, center = True, color = season_colors[current_season])
         for i in range(lives):
             x = WINDOWWIDTH - (i + 1) * (heartImage.get_width() + 10)
             y = 10
             windowSurface.blit(heartImage, (x,y))
 
-        # Draw the player's rectangle.
+        # Draw the player"s rectangle.
         windowSurface.blit(playerImage, playerRect)
 
         # Draw each baddie.
         for b in baddies:
-            windowSurface.blit(b['surface'], b['rect'])
+            windowSurface.blit(b["surface"], b["rect"])
 
         # Draw each coins.
         for c in coins:
-            windowSurface.blit(c['surface'], c['rect'])
+            windowSurface.blit(c["surface"], c["rect"])
+        
+        # Draw each hourglasses.
+        for h in hourglasses:
+            windowSurface.blit(h["surface"],h["rect"])
         
         # Draw each platforms.
         for p in platforms:
@@ -791,6 +845,22 @@ while True:
             coin_collected_sound.play()
             score += 100
         
+        # Check if player has collected any hourglass and if so, remove it and slow time for a period.
+        if playerHasCollectedHourglass(playerRect, hourglasses) is not None:
+            hourglasses.remove(playerHasCollectedHourglass(playerRect, hourglasses))
+            hourglass_collected_sound.play()
+            pygame.mixer.music.pause()
+            slowTime = True
+        
+        # Managing slow time.
+        if slowTime:
+            slowTimer += 1
+            if slowTimer >= 125:
+                slowTime = False
+                slowTimer = 0
+                hourglass_collected_sound.stop()
+                pygame.mixer.music.unpause()
+        
         # Check if any baddie has hit a platform and if so, remove it.
         hit_baddie = baddieHasHitPlatform(platforms, baddies)
         if hit_baddie is not None:
@@ -813,9 +883,9 @@ while True:
         gameOverSound.play(fade_ms = 1500)
 
         windowSurface.blit(GAMEOVER_BACKGROUND, (0, 0))
-        drawText('GAME OVER', gameover_title_font, windowSurface, (WINDOWWIDTH/2), 220, (15, 8, 5), center = True)   
-        drawText('Enter if you dare to play again...', gameover_font, windowSurface, (WINDOWWIDTH/2), (WINDOWHEIGHT / 2), color = (255, 255, 255), center = True)
-        drawText('If you are not brave enough escape...', gameover_font, windowSurface, (WINDOWWIDTH/2), (WINDOWHEIGHT/1.4), color = (255, 255, 255), center = True)
+        drawText("GAME OVER", gameover_title_font, windowSurface, (WINDOWWIDTH/2), 220, (15, 8, 5), center = True)   
+        drawText("Enter if you dare to play again...", gameover_font, windowSurface, (WINDOWWIDTH/2), (WINDOWHEIGHT / 2), color = (255, 255, 255), center = True)
+        drawText("If you are not brave enough escape...", gameover_font, windowSurface, (WINDOWWIDTH/2), (WINDOWHEIGHT/1.4), color = (255, 255, 255), center = True)
         pygame.display.update()
         result = waitForPlayerToPressKey()
         gameOverSound.stop()
