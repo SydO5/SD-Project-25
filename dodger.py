@@ -68,19 +68,11 @@ def playerHasHitBaddie(playerRect, baddies):
         if playerRect.colliderect(b["rect"]):
             return b
     return None
-
-# Check if the player has collected a coin.
-def playerHasCollectedCoin(playerRect, coins):
-    for c in coins:
-        if playerRect.colliderect(c["rect"]):
-            return c
-    return None
-
-# Check if the player has collected an hourglass.
-def playerHasCollectedHourglass(playerRect, hourglasses):
-    for h in hourglasses:
-        if playerRect.colliderect(h["rect"]):
-            return h
+# Check if the player has collected an item.
+def playerHasCollectedItem(playerRect, items):
+    for item in items:
+        if playerRect.colliderect(item.rect):
+            return item
     return None
 
 # Check if baddie has hit a platform.
@@ -142,6 +134,23 @@ class Button:
         rect = render.get_rect(center = (self.x, self.y))
         surface.blit(render, rect)
         return rect
+
+# Set up item class.
+class Item:
+    def __init__(self, x, y, width, height, image, speed, item_type):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.image = pygame.transform.scale(image, (width, height))
+        self.speed = speed
+        self.type = item_type
+
+    def move(self, slowTime=False):
+        if slowTime:
+            self.rect.x -= 1
+        else:
+            self.rect.x -= self.speed
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
 
 # Create main menu with play, character selection, settings and quit buttons.
 def MainMenu():
@@ -522,7 +531,7 @@ floorImages = {
     "Autumn": load_and_scale_floor("floor_autumn.png"),
     "Winter": load_and_scale_floor("floor_winter.png")
 }
-FloorImage = floorImages[current_season]
+floorImage = floorImages[current_season]
 
 # Show the Main Menu screen.
 MainMenu()
@@ -541,6 +550,7 @@ while True:
     score = 0
     day = 0
     day_timer = 0
+    next_season_day = 90
     season_index = 0
     lives = 3
     
@@ -585,7 +595,7 @@ while True:
             platformImage = platformImages[current_season]
             floorImage = floorImages[current_season]
 
-        if day % 90 == 0 and day != 0 and NEXTBACKGROUNDIMAGE is None:
+        if day  >= next_season_day and NEXTBACKGROUNDIMAGE is None:
             season_index = (season_index + 1) % len(seasons)
             current_season = seasons[season_index]
             baddieImage = baddieImages[current_season]
@@ -596,6 +606,7 @@ while True:
             fade_surface = NEXTBACKGROUNDIMAGE.copy()
             fade_surface.set_alpha(0)
             BACKGROUND_ALPHA = 0
+            next_season_day += 90
 
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -653,6 +664,10 @@ while True:
         if baddieAddCounter == ADDNEWBADDIERATE:
             baddieAddCounter = 0
             baddieSize = random.randint(BADDIEMINSIZE, BADDIEMAXSIZE)
+            spawn_range = 150
+            baddieMinY = max(0, playerRect.centery - spawn_range)
+            baddieMaxY = min(WINDOWHEIGHT - baddieSize, playerRect.centery + spawn_range)
+            baddieY = random.randint(baddieMinY, baddieMaxY)
             
             is_follower = False
             baddie_surface = baddieImage
@@ -664,7 +679,7 @@ while True:
                 baddie_surface = followerBaddieImage
             
             newBaddie = {
-                "rect": pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - FLOORHEIGHT - baddieSize), baddieSize, baddieSize),
+                "rect": pygame.Rect(WINDOWWIDTH, baddieY, baddieSize, baddieSize),
                 "speed": random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
                 "surface": pygame.transform.scale(baddie_surface, (baddieSize, baddieSize)),
                 "is_follower": is_follower,
@@ -679,11 +694,7 @@ while True:
         if coinAddCounter == ADDNEWCOINRATE:
             coinAddCounter = 0
             coinSize = 75
-            newCoin = {"rect": pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - coinSize), coinSize, coinSize),
-                        "speed": 5,
-                        "surface":pygame.transform.scale(coinImage, (coinSize, coinSize)),
-                        }
-
+            newCoin = Item(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - coinSize), coinSize, coinSize, coinImage, 5, "coin")
             coins.append(newCoin)
         
         # Add hourglasses to slow time.
@@ -693,10 +704,7 @@ while True:
             hourglassAddCounter = 0
             hourglassWidth = 45
             hourglassHeight = 55
-            newHourglass = {"rect": pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - hourglassHeight), hourglassWidth, hourglassHeight),
-                        "speed": 5,
-                        "surface":pygame.transform.scale(hourglassImage, (hourglassWidth, hourglassHeight)),
-                        }
+            newHourglass = Item(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - hourglassHeight), hourglassWidth, hourglassHeight, hourglassImage, 5, "hourglass")
             hourglasses.append(newHourglass)
         
         # Add platforms at the right of the screen.
@@ -765,18 +773,12 @@ while True:
         
         # Move the coins to the left.
         for c in coins:
-            if not slowTime:
-                c["rect"].move_ip(-c["speed"],0)
-            elif slowTime:
-                c["rect"].move_ip(-1, 0)
+            c.move(slowTime)
         
         # Move the hourglasses to the left.
         for h in hourglasses:
-            if not slowTime:
-                h["rect"].move_ip(-h["speed"],0)
-            elif slowTime:
-                h["rect"].move_ip(-1, 0)
-
+            h.move(slowTime)
+ 
         # Move the platforms to the left.
         for p in platforms:
             if not slowTime:
@@ -792,14 +794,10 @@ while True:
                 baddies.remove(b)
         
         # Delete coins that have gone past the left of the screen.
-        for c in coins[:]:
-            if c["rect"].right < 0:
-                coins.remove(c)
+        coins = [c for c in coins if c.rect.right >= 0]
         
         # Delete hourglasses that have gone past the left of the screen.
-        for h in hourglasses[:]:
-            if h["rect"].right < 0:
-                hourglasses.remove(h)
+        hourglasses = [h for h in hourglasses if h.rect.right >= 0]
         
         # Delete platforms that have gone past the left of the screen.
         for p in platforms[:]:
@@ -820,6 +818,14 @@ while True:
                 BACKGROUND_ALPHA = 0
         else:
             windowSurface.blit(BACKGROUNDIMAGE, (0, 0))
+        
+        # Draw the coins.
+        for c in coins:
+            c.draw(windowSurface)
+        
+        # Draw the hourglasses.
+        for h in hourglasses:
+            h.draw(windowSurface)
 
         # Draw the floor.
         floor_width = floorImage.get_width()
@@ -836,20 +842,12 @@ while True:
             y = 10
             windowSurface.blit(heartImage, (x,y))
 
-        # Draw the player"s rectangle.
+        # Draw the player's rectangle.
         windowSurface.blit(playerImage, playerRect)
 
         # Draw each baddie.
         for b in baddies:
             windowSurface.blit(b["surface"], b["rect"])
-
-        # Draw each coins.
-        for c in coins:
-            windowSurface.blit(c["surface"], c["rect"])
-        
-        # Draw each hourglasses.
-        for h in hourglasses:
-            windowSurface.blit(h["surface"],h["rect"])
         
         # Draw each platforms.
         for p in platforms:
@@ -878,18 +876,21 @@ while True:
                 BACKGROUND_ALPHA = 0
                 break
         
-        # Check if player has collected any coin and if so, remove it and increase score.
-        if playerHasCollectedCoin(playerRect, coins) is not None:
-            coins.remove(playerHasCollectedCoin(playerRect, coins))
-            coin_collected_sound.play()
+            # Check if player has collected any items.
+        # If the player collects any coin it increases score.
+        collected_item = playerHasCollectedItem(playerRect, coins)
+        if collected_item:
+            coins.remove(collected_item)
             score += 100
+            coin_collected_sound.play()
         
-        # Check if player has collected any hourglass and if so, remove it and slow time for a period.
-        if playerHasCollectedHourglass(playerRect, hourglasses) is not None:
-            hourglasses.remove(playerHasCollectedHourglass(playerRect, hourglasses))
+        # If the player collects any hourglass it slows game.
+        collected_item = playerHasCollectedItem(playerRect, hourglasses)
+        if collected_item:
+            hourglasses.remove(collected_item)
+            slowTime = True
             hourglass_collected_sound.play()
             pygame.mixer.music.pause()
-            slowTime = True
         
         # Managing slow time.
         if slowTime:
