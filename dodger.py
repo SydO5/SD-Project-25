@@ -34,7 +34,7 @@ ADDNEWPLATFORMRATE = 90
 PLATFORMSPEED = 6
 PLATFORM_HITBOX_OFFSET_Y = 23
 
-FLOOR_HITBOX_OFFSET_Y = 50
+FLOOR_HITBOX_OFFSET_Y = 45
 FLOORHEIGHT = 100
 
     # Set up functions.
@@ -682,7 +682,7 @@ while True:
         if playerRect.bottom >= floor_collision_y:
             playerRect.bottom = floor_collision_y
             PLAYERYSPEED = 0
-            on_ground = 0
+            on_ground = True
             JUMPSLEFT = 2
 
         # Move the player around.
