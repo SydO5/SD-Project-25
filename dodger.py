@@ -27,6 +27,16 @@ ADDNEWBADDIERATE = 50
 
 ADDNEWCOINRATE = 200
 
+PLATFORMMINWIDTH = 100
+PLATFORMMAXWIDTH = 250
+PLATFORMHEIGHT = 60
+ADDNEWPLATFORMRATE = 90
+PLATFORMSPEED = 6
+PLATFORM_HITBOX_OFFSET_Y = 23
+
+FLOOR_HITBOX_OFFSET_Y = 50
+FLOORHEIGHT = 100
+
     # Set up functions.
 # Exit the game.
 def terminate():
@@ -78,6 +88,14 @@ def scale_proportionally(image, PLAYERHEIGHT):
     new_width = int(width * scale_factor)
     new_height = int(height * scale_factor)
     return pygame.transform.scale(image, (new_width, new_height))
+
+# Load and scale floor image proportionally to a given height.
+def load_and_scale_floor(image_name):
+    img = pygame.image.load(image_name).convert_alpha()
+    # new width based on aspect ratio
+    aspect_ratio = img.get_width() / img.get_height()
+    new_width = int(FLOORHEIGHT * aspect_ratio)
+    return pygame.transform.scale(img, (new_width, FLOORHEIGHT))
 
 # Play the music of the menu.
 def playMenuMusic():
@@ -453,13 +471,28 @@ baddieImages = {"Spring": pygame.image.load('thorn.png').convert_alpha(),
                 "Summer": pygame.image.load('flame.png').convert_alpha(),
                 "Autumn": pygame.image.load('leaf.png').convert_alpha(),
                 "Winter": pygame.image.load('ice.png').convert_alpha()}
-
 baddieImage = baddieImages[current_season]
 
 heartImage = pygame.image.load('heart.png').convert_alpha()
 heartImage = pygame.transform.scale(heartImage, (80, 80))
 
 coinImage = pygame.image.load('coin.png').convert_alpha()
+
+platformImages = {
+    "Spring": pygame.image.load('platform_spring.png').convert_alpha(),
+    "Summer": pygame.image.load('platform_summer.png').convert_alpha(),
+    "Autumn": pygame.image.load('platform_autumn.png').convert_alpha(),
+    "Winter": pygame.image.load('platform_winter.png').convert_alpha()
+}
+platformImage = platformImages[current_season]
+
+floorImages = {
+    "Spring": load_and_scale_floor('floor_spring.png'),
+    "Summer": load_and_scale_floor('floor_summer.png'),
+    "Autumn": load_and_scale_floor('floor_autumn.png'),
+    "Winter": load_and_scale_floor('floor_winter.png')
+}
+FloorImage = floorImages[current_season]
 
 # Show the Main Menu screen.
 MainMenu()
@@ -469,26 +502,33 @@ topDay = 0
 while True:
     # Set up the start of the game.
     playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 50)
+
     PLAYERYSPEED = 0
     JUMPSLEFT = 2
     on_ground = False
+    drop_down_platform = False
     quit_to_menu = False
-    baddies = []
-    baddieAddCounter = 0
     score = 0
     day = 0
     day_timer = 0
     season_index = 0
+    lives = 3
+    
+    baddies = []
+    baddieAddCounter = 0
+
     coins = []
     coinAddCounter = 0
-    lives = 3
+
+    platforms = []
+    platformAddCounter = 0
+
     moveLeft = moveRight = False
     reverseCheat = slowCheat = False
+
     stopMenuMusic()
     pygame.mixer.music.load('music_game.wav')
     pygame.mixer.music.play(-1, 0.0)
-
-    
 
     while True: # The game loop runs while the game part is playing.
         score += 1 # Increase score.
@@ -502,11 +542,15 @@ while True:
         if day == 0:
             BACKGROUNDIMAGE = backgrounds[current_season]
             baddieImage = baddieImages[current_season]
+            platformImage = platformImages[current_season]
+            floorImage = floorImages[current_season]
 
         if day % 90 == 0 and day != 0 and NEXTBACKGROUNDIMAGE is None:
             season_index = (season_index + 1) % len(seasons)
             current_season = seasons[season_index]
             baddieImage = baddieImages[current_season]
+            platformImage = platformImages[current_season]
+            floorImage = floorImages[current_season]
             NEXTBACKGROUNDIMAGE = backgrounds[current_season]
             fade_surface = NEXTBACKGROUNDIMAGE.copy()
             fade_surface.set_alpha(0)
@@ -531,6 +575,7 @@ while True:
                     playerImage = playerImages["run_right"]
                 if event.key == K_DOWN or event.key == K_s:
                     GRAVITY = 3
+                    drop_down_platform = True
                 if event.key == K_SPACE and JUMPSLEFT > 0:
                     PLAYERYSPEED = -JUMPPOWER
                     JUMPSLEFT -= 1
@@ -555,6 +600,7 @@ while True:
                     moveRight = False
                 if event.key == K_DOWN or event.key == K_s:
                     GRAVITY = 1
+                    drop_down_platform = False
 
         # Change player image based on movement and jumping.
         if not on_ground:
@@ -572,7 +618,7 @@ while True:
             else:
                 playerImage = playerImages["stoic"]
 
-        # Add new baddies at the left of the screen.
+        # Add new baddies at the right of the screen.
         if not reverseCheat and not slowCheat:
             baddieAddCounter += 1
         if baddieAddCounter == ADDNEWBADDIERATE:
@@ -582,9 +628,9 @@ while True:
             baddieMinY = max(0, playerRect.centery - spawn_range)
             baddieMaxY = min(WINDOWHEIGHT - baddieSize, playerRect.centery + spawn_range)
             baddieY = random.randint(baddieMinY, baddieMaxY)
-            newBaddie = {'rect': pygame.Rect(WINDOWWIDTH, baddieY, baddieSize, baddieSize),
-                        'speed': random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
-                        'surface':pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
+            newBaddie = {"rect": pygame.Rect(WINDOWWIDTH, baddieY, baddieSize, baddieSize),
+                        "speed": random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
+                        "surface": pygame.transform.scale(baddieImage, (baddieSize, baddieSize)),
                         }
 
             baddies.append(newBaddie)
@@ -594,23 +640,49 @@ while True:
         if coinAddCounter == ADDNEWCOINRATE:
             coinAddCounter = 0
             coinSize = 75
-            newCoin = {'rect': pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - coinSize), coinSize, coinSize),
-                        'speed': 5,
-                        'surface':pygame.transform.scale(coinImage, (coinSize, coinSize)),
+            newCoin = {"rect": pygame.Rect(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - coinSize), coinSize, coinSize),
+                        "speed": 5,
+                        "surface":pygame.transform.scale(coinImage, (coinSize, coinSize)),
                         }
 
             coins.append(newCoin)
-
+        
+        # Add platforms at the right of the screen.
+        platformAddCounter += 1
+        if platformAddCounter == ADDNEWPLATFORMRATE:
+            platformAddCounter = 0
+            platform_width = random.randint(PLATFORMMINWIDTH, PLATFORMMAXWIDTH)
+            platform_X = WINDOWWIDTH
+            platform_Y = random.randint(WINDOWHEIGHT // 2, WINDOWHEIGHT - FLOORHEIGHT - 50)
+            image_rect = pygame.Rect(platform_X, platform_Y, platform_width, PLATFORMHEIGHT)
+            hitbox_rect = pygame.Rect(image_rect.left, image_rect.top + PLATFORM_HITBOX_OFFSET_Y, image_rect.width, image_rect.height - PLATFORM_HITBOX_OFFSET_Y)
+            
+            newPlatform = {"rect": image_rect,
+                           "hitbox" : hitbox_rect,
+                           "speed": PLATFORMSPEED,
+                           "surface": pygame.transform.scale(platformImage, (platform_width, PLATFORMHEIGHT)),
+                          }
+            platforms.append(newPlatform)
 
         # Apply gravity to the player.
         PLAYERYSPEED += GRAVITY
         playerRect.y += PLAYERYSPEED
 
-        # Making it impossible for the player to fall below the floor.
-        if playerRect.bottom >= WINDOWHEIGHT:
-            playerRect.bottom = WINDOWHEIGHT
+        # Collision of the player with platforms.
+        for p in platforms :
+            if not drop_down_platform and playerRect.colliderect(p["hitbox"]):
+                if PLAYERYSPEED > 0 and playerRect.bottom < p["hitbox"].bottom:
+                    playerRect.bottom = p["hitbox"].top
+                    PLAYERYSPEED = 0
+                    on_ground = True
+                    JUMPSLEFT = 2
+        
+        # Collision of the player with the floor.
+        floor_collision_y = WINDOWHEIGHT - FLOORHEIGHT + FLOOR_HITBOX_OFFSET_Y
+        if playerRect.bottom >= floor_collision_y:
+            playerRect.bottom = floor_collision_y
             PLAYERYSPEED = 0
-            on_ground = True
+            on_ground = 0
             JUMPSLEFT = 2
 
         # Move the player around.
@@ -632,6 +704,11 @@ while True:
         for c in coins:
             c['rect'].move_ip(-c['speed'],0)
 
+        # Move the platforms to the left.
+        for p in platforms:
+            p["rect"].move_ip(-p["speed"], 0)
+            p["hitbox"].move_ip(-p["speed"], 0)
+
         # Delete baddies that have gone past the left of the screen.
         for b in baddies[:]:
             if b['rect'].right < 0:
@@ -641,6 +718,11 @@ while True:
         for c in coins[:]:
             if c['rect'].right < 0:
                 coins.remove(c)
+        
+        # Delete platforms that have gone past the left of the screen.
+        for p in platforms[:]:
+            if p["rect"].right < 0:
+                platforms.remove(p)
 
         # Draw the game world on the window.     
         if NEXTBACKGROUNDIMAGE:
@@ -656,6 +738,11 @@ while True:
                 BACKGROUND_ALPHA = 0
         else:
             windowSurface.blit(BACKGROUNDIMAGE, (0, 0))
+
+        # Draw the floor.
+        floor_width = floorImage.get_width()
+        for x in range(0, WINDOWWIDTH + floor_width, floor_width):
+             windowSurface.blit(floorImage, (x, WINDOWHEIGHT - FLOORHEIGHT))
 
         # Draw the score, top score, current season, days, top days and remaining lives (hearts).
         drawText('Score : %s' % (score), font, windowSurface, 10, 0, color = season_colors[current_season])
@@ -675,6 +762,10 @@ while True:
         # Draw each coins.
         for c in coins:
             windowSurface.blit(c['surface'], c['rect'])
+        
+        # Draw each platforms.
+        for p in platforms:
+            windowSurface.blit(p["surface"], p["rect"])
 
         pygame.display.update()
 
