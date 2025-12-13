@@ -454,7 +454,6 @@ def play_music(index):
     pygame.mixer.music.load(musics[index])
     pygame.mixer.music.play(-1)
     
-transition_playing = False
 
 # Create red filter when the player hit a baddie.
 red_filter = pygame.Surface((WINDOWWIDTH, WINDOWHEIGHT))
@@ -603,8 +602,9 @@ while True:
                 day_timer = 0
 
         #changing music with seasons 
-            
-        if day % 90 == 0 and day != 0 and last_day !=day:
+        if day % 85 == 0 and day != 0:
+            pygame.mixer.music.fadeout(2000)
+        if day % 89 == 0 and day != 0 and last_day !=day:
             pygame.mixer.music.stop()
             current_index = (current_index + 1) % len(musics)
             play_music(current_index)
