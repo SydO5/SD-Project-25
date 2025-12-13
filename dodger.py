@@ -14,10 +14,12 @@ MUSICVOLUME = 0.5
 SFXVOLUME = 0.5
 volume_changed = False
 
-PLAYERMOVERATE_BOOSTED = 12
 PLAYERMOVERATE_NORMAL = 8
+PLAYERMOVERATE_BOOSTED = 12
 PLAYERMOVERATE = PLAYERMOVERATE_NORMAL
-JUMPPOWER = 25
+JUMPPOWER_NORMAL = 25
+JUMPPOWER_BOOSTED = 30
+JUMPPOWER = JUMPPOWER_NORMAL
 GRAVITY = 1
 PLAYERHEIGHT = 200
 
@@ -579,6 +581,7 @@ while True:
 
     boots = []
     bootsAddCounter = 0
+    bootsTimer = 0
 
     platforms = []
     platformAddCounter = 0
@@ -717,8 +720,8 @@ while True:
             hourglassAddCounter += 1
         if hourglassAddCounter == ADDNEWHOURGLASSRATE:
             hourglassAddCounter = 0
-            hourglassWidth = 45
-            hourglassHeight = 55
+            hourglassWidth = 50
+            hourglassHeight = 60
             newHourglass = Item(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - FLOORHEIGHT - hourglassHeight), hourglassWidth, hourglassHeight, hourglassImage, 5, "hourglass")
             hourglasses.append(newHourglass)
         
@@ -727,8 +730,9 @@ while True:
             flashAddCounter += 1
         if flashAddCounter == ADDNEWFLASHRATE:
             flashAddCounter = 0
-            flashSize = 50
-            newFlash = Item(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - FLOORHEIGHT - flashSize), flashSize, flashSize, flashImage, 5, "flash")
+            flashWidth = 50
+            flashHeight = 60
+            newFlash = Item(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - FLOORHEIGHT - flashHeight), flashWidth, flashHeight, flashImage, 5, "flash")
             flashes.append(newFlash)
         
         # Add boots to increase player's jump power.
@@ -736,7 +740,7 @@ while True:
             bootsAddCounter += 1
         if bootsAddCounter == ADDNEWBOOTSRATE:
             bootsAddCounter = 0
-            bootsSize = 50
+            bootsSize = 65
             newBoots = Item(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - FLOORHEIGHT - bootsSize), bootsSize, bootsSize, bootsImage, 5, "boots")
             boots.append(newBoots)
 
@@ -956,6 +960,11 @@ while True:
 
 
         # If the player collects any boots it increases player's jump power.
+        collected_item = playerHasCollectedItem(playerRect, boots)
+        if collected_item:
+            boots.remove(collected_item)
+            JUMPPOWER = JUMPPOWER_BOOSTED
+            boots_collected_sound.play()
         
         # Managing slow time.
         if slowTime:
@@ -966,13 +975,19 @@ while True:
                 hourglass_collected_sound.stop()
                 pygame.mixer.music.unpause()
         
-        # Managing flash time.
+        # Managing speed flash time.
         if PLAYERMOVERATE == PLAYERMOVERATE_BOOSTED:
             flashTimer += 1
             if flashTimer >= 250:
                 PLAYERMOVERATE = PLAYERMOVERATE_NORMAL
                 flashTimer = 0
-
+        
+        # Managing jump boost time.
+        if JUMPPOWER == JUMPPOWER_BOOSTED:
+            bootsTimer += 1
+            if bootsTimer >= 250:
+                JUMPPOWER = JUMPPOWER_NORMAL
+                bootsTimer = 0
 
         # Check if any baddie has hit a platform and if so, remove it.
         hit_baddie = baddieHasHitPlatform(platforms, baddies)
