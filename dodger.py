@@ -23,8 +23,8 @@ JUMPPOWER = JUMPPOWER_NORMAL
 GRAVITY = 1
 PLAYERHEIGHT = 200
 
-BADDIEMINSIZE = 75
-BADDIEMAXSIZE = 100
+BADDIEMINSIZE = 60
+BADDIEMAXSIZE = 85
 BADDIEMINSPEED = 5
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 50
@@ -711,7 +711,7 @@ while True:
             coinAddCounter += 1
         if coinAddCounter == ADDNEWCOINRATE:
             coinAddCounter = 0
-            coinSize = 75
+            coinSize = 60
             newCoin = Item(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - FLOORHEIGHT - coinSize), coinSize, coinSize, coinImage, 5, "coin")
             coins.append(newCoin)
         
