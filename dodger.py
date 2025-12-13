@@ -24,7 +24,7 @@ GRAVITY = 1
 PLAYERHEIGHT = 200
 
 BADDIEMINSIZE = 60
-BADDIEMAXSIZE = 85
+BADDIEMAXSIZE = 80
 BADDIEMINSPEED = 5
 BADDIEMAXSPEED = 8
 ADDNEWBADDIERATE = 50
@@ -716,7 +716,7 @@ while True:
             coins.append(newCoin)
         
         # Add hourglasses to slow time.
-        if not slowTime:
+        if not slowTime and not (flashes or boots):
             hourglassAddCounter += 1
         if hourglassAddCounter == ADDNEWHOURGLASSRATE:
             hourglassAddCounter = 0
@@ -726,7 +726,7 @@ while True:
             hourglasses.append(newHourglass)
         
         # Add flashes to increase player's speed.
-        if not slowTime:
+        if not slowTime and not (hourglasses or boots):
             flashAddCounter += 1
         if flashAddCounter == ADDNEWFLASHRATE:
             flashAddCounter = 0
@@ -736,11 +736,11 @@ while True:
             flashes.append(newFlash)
         
         # Add boots to increase player's jump power.
-        if not slowTime:
+        if not slowTime and not (hourglasses or flashes):
             bootsAddCounter += 1
         if bootsAddCounter == ADDNEWBOOTSRATE:
             bootsAddCounter = 0
-            bootsSize = 65
+            bootsSize = 70
             newBoots = Item(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - FLOORHEIGHT - bootsSize), bootsSize, bootsSize, bootsImage, 5, "boots")
             boots.append(newBoots)
 
@@ -956,6 +956,7 @@ while True:
         if collected_item:
             flashes.remove(collected_item)
             PLAYERMOVERATE = PLAYERMOVERATE_BOOSTED
+            flashTimer = 0
             flash_collected_sound.play()
 
 
@@ -964,6 +965,7 @@ while True:
         if collected_item:
             boots.remove(collected_item)
             JUMPPOWER = JUMPPOWER_BOOSTED
+            bootsTimer = 0
             boots_collected_sound.play()
         
         # Managing slow time.
