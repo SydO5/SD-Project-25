@@ -448,11 +448,12 @@ season_index = 0
 current_season = seasons[season_index]
 
 musics = ["Spring 1.wav","Summer 1.wav","Autumn 1.wav","Winter 1.wav","Spring 2.wav","Summer 2.wav","Autumn 2.wav","Winter 2.wav"]
-
 transi = pygame.mixer.Sound("Transition.wav")
 
 def play_music(index):
     musics[index].play
+    pygame.mixer.music.play(-1, fade_ms=2000) 
+    
 transition_playing = False
 
 # Create red filter when the player hit a baddie.
@@ -587,8 +588,6 @@ while True:
     pygame.mixer.music.load(musics[current_index])
     pygame.mixer.music.play(-1)
 
-    pygame.mixer.music.load("music_game.wav")
-    pygame.mixer.music.play(-1, 0.0)
 
     while True: # The game loop runs while the game part is playing.
         score += 1 # Increase score.
@@ -602,7 +601,21 @@ while True:
             if day_timer >= 20:
                 day += 1
                 day_timer = 0
-        
+
+        #changing music with seasons 
+            
+        if day % 91 == 0 and not transition_playing and day != 0 and last_day !=day:
+            pygame.mixer.music.stop()
+            transi.play()
+            transition_playing = True
+            last_day = day
+
+        if transition_playing and not pygame.mixer.get_busy():
+            current_index = (current_index + 1) % len(musics)
+            pygame.mixer.music.load(musics[current_index])
+            pygame.mixer.music.play(-1)
+            transition_playing = False
+
         # Change background (season) based on number of days (cycle of seasons).
         if day == 0:
             BACKGROUNDIMAGE = backgrounds[current_season]
