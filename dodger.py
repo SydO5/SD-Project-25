@@ -437,10 +437,10 @@ BACKGROUNDIMAGE = pygame.transform.scale(BACKGROUNDIMAGE, (WINDOWWIDTH, WINDOWHE
 
 #Make dictionnary with backgrounds adjusted to screen size
 backgrounds = {
-    "Spring": pygame.transform.scale(pygame.image.load("back_printemps.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
-    "Summer": pygame.transform.scale(pygame.image.load("back_été.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
-    "Autumn": pygame.transform.scale(pygame.image.load("back_automne.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
-    "Winter": pygame.transform.scale(pygame.image.load("back_hiver.png"), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "Spring": pygame.transform.scale(pygame.image.load("back_printemps.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "Summer": pygame.transform.scale(pygame.image.load("back_été.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "Autumn": pygame.transform.scale(pygame.image.load("back_automne.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
+    "Winter": pygame.transform.scale(pygame.image.load("back_hiver.png").convert(), (WINDOWWIDTH, WINDOWHEIGHT)),
 }
 
 seasons = ["Spring", "Summer", "Autumn", "Winter"]
@@ -603,8 +603,8 @@ while True:
 
         #changing music with seasons 
         if day % 85 == 0 and day != 0:
-            pygame.mixer.music.fadeout(2000)
-        if day % 89 == 0 and day != 0 and last_day !=day:
+            pygame.mixer.music.fadeout(2200)
+        if day % 90 == 0 and day != 0 and last_day !=day:
             pygame.mixer.music.stop()
             current_index = (current_index + 1) % len(musics)
             play_music(current_index)
