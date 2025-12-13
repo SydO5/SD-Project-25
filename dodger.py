@@ -14,7 +14,9 @@ MUSICVOLUME = 0.5
 SFXVOLUME = 0.5
 volume_changed = False
 
-PLAYERMOVERATE = 8
+PLAYERMOVERATE_BOOSTED = 12
+PLAYERMOVERATE_NORMAL = 8
+PLAYERMOVERATE = PLAYERMOVERATE_NORMAL
 JUMPPOWER = 25
 GRAVITY = 1
 PLAYERHEIGHT = 200
@@ -573,6 +575,7 @@ while True:
 
     flashes = []
     flashAddCounter = 0
+    flashTimer = 0
 
     boots = []
     bootsAddCounter = 0
@@ -945,6 +948,12 @@ while True:
             pygame.mixer.music.pause()
         
         # If the player collects any flash it increases player's speed.
+        collected_item = playerHasCollectedItem(playerRect, flashes)
+        if collected_item:
+            flashes.remove(collected_item)
+            PLAYERMOVERATE = PLAYERMOVERATE_BOOSTED
+            flash_collected_sound.play()
+
 
         # If the player collects any boots it increases player's jump power.
         
@@ -957,6 +966,14 @@ while True:
                 hourglass_collected_sound.stop()
                 pygame.mixer.music.unpause()
         
+        # Managing flash time.
+        if PLAYERMOVERATE == PLAYERMOVERATE_BOOSTED:
+            flashTimer += 1
+            if flashTimer >= 250:
+                PLAYERMOVERATE = PLAYERMOVERATE_NORMAL
+                flashTimer = 0
+
+
         # Check if any baddie has hit a platform and if so, remove it.
         hit_baddie = baddieHasHitPlatform(platforms, baddies)
         if hit_baddie is not None:
