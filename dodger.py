@@ -478,6 +478,7 @@ click_sound_menu = pygame.mixer.Sound("click_menu.mp3")
 hover_sound_menu = pygame.mixer.Sound("hover_sound.mp3")
 coin_collected_sound = pygame.mixer.Sound("coin.mp3")
 hourglass_collected_sound = pygame.mixer.Sound("hourglass.mp3")
+hourglass_time_slow = pygame.mixer.Sound("hourglass_time_slow.mp3")
 flash_collected_sound = pygame.mixer.Sound("flash.mp3")
 boots_collected_sound = pygame.mixer.Sound("boots.mp3")
 
@@ -720,8 +721,8 @@ while True:
             hourglassAddCounter += 1
         if hourglassAddCounter == ADDNEWHOURGLASSRATE:
             hourglassAddCounter = 0
-            hourglassWidth = 50
-            hourglassHeight = 60
+            hourglassWidth = 55
+            hourglassHeight = 65
             newHourglass = Item(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - FLOORHEIGHT - hourglassHeight), hourglassWidth, hourglassHeight, hourglassImage, 5, "hourglass")
             hourglasses.append(newHourglass)
         
@@ -949,6 +950,7 @@ while True:
             hourglasses.remove(collected_item)
             slowTime = True
             hourglass_collected_sound.play()
+            hourglass_time_slow.play()
             pygame.mixer.music.pause()
         
         # If the player collects any flash it increases player's speed.
@@ -971,10 +973,10 @@ while True:
         # Managing slow time.
         if slowTime:
             slowTimer += 1
-            if slowTimer >= 125:
+            if slowTimer >= 175:
                 slowTime = False
                 slowTimer = 0
-                hourglass_collected_sound.stop()
+                hourglass_time_slow.stop()
                 pygame.mixer.music.unpause()
         
         # Managing speed flash time.
@@ -1009,7 +1011,7 @@ while True:
             continue
     elif quit_to_menu == False:
         pygame.mixer.music.stop()
-        hourglass_collected_sound.stop()
+        hourglass_time_slow.stop()
         
         gameOverSound.play(fade_ms = 1500)
 
