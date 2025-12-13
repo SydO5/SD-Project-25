@@ -31,6 +31,8 @@ FOLLOWSPEEDFACTOR = 0.1
 
 ADDNEWCOINRATE = 200
 ADDNEWHOURGLASSRATE = 800
+ADDNEWFLASHRATE = 750
+ADDNEWBOOTSRATE = 750
 
 PLATFORMMINWIDTH = 100
 PLATFORMMAXWIDTH = 250
@@ -472,6 +474,8 @@ click_sound_menu = pygame.mixer.Sound("click_menu.mp3")
 hover_sound_menu = pygame.mixer.Sound("hover_sound.mp3")
 coin_collected_sound = pygame.mixer.Sound("coin.mp3")
 hourglass_collected_sound = pygame.mixer.Sound("hourglass.mp3")
+flash_collected_sound = pygame.mixer.Sound("flash.mp3")
+boots_collected_sound = pygame.mixer.Sound("boots.mp3")
 
 # Set up images.
 NinjaImages = {"run_right" : scale_proportionally(pygame.image.load("ninja_run_right.png").convert_alpha(), PLAYERHEIGHT),
@@ -516,6 +520,8 @@ heartImage = pygame.transform.scale(heartImage, (80, 80))
 
 coinImage = pygame.image.load("coin.png").convert_alpha()
 hourglassImage = pygame.image.load("hourglass.png").convert_alpha()
+flashImage = pygame.image.load("flash.png").convert_alpha()
+bootsImage = pygame.image.load("boots.png").convert_alpha()
 
 platformImages = {
     "Spring": pygame.image.load("platform_spring.png").convert_alpha(),
@@ -564,6 +570,12 @@ while True:
     hourglassAddCounter = 0
     slowTime = False
     slowTimer = 0
+
+    flashes = []
+    flashAddCounter = 0
+
+    boots = []
+    bootsAddCounter = 0
 
     platforms = []
     platformAddCounter = 0
@@ -707,6 +719,24 @@ while True:
             newHourglass = Item(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - FLOORHEIGHT - hourglassHeight), hourglassWidth, hourglassHeight, hourglassImage, 5, "hourglass")
             hourglasses.append(newHourglass)
         
+        # Add flashes to increase player's speed.
+        if not slowTime:
+            flashAddCounter += 1
+        if flashAddCounter == ADDNEWFLASHRATE:
+            flashAddCounter = 0
+            flashSize = 50
+            newFlash = Item(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - FLOORHEIGHT - flashSize), flashSize, flashSize, flashImage, 5, "flash")
+            flashes.append(newFlash)
+        
+        # Add boots to increase player's jump power.
+        if not slowTime:
+            bootsAddCounter += 1
+        if bootsAddCounter == ADDNEWBOOTSRATE:
+            bootsAddCounter = 0
+            bootsSize = 50
+            newBoots = Item(WINDOWWIDTH, random.randint(0, WINDOWHEIGHT - FLOORHEIGHT - bootsSize), bootsSize, bootsSize, bootsImage, 5, "boots")
+            boots.append(newBoots)
+
         # Add platforms at the right of the screen.
         if not slowTime:
             platformAddCounter += 1
@@ -778,6 +808,14 @@ while True:
         # Move the hourglasses to the left.
         for h in hourglasses:
             h.move(slowTime)
+        
+        # Move the flashes to the left.
+        for f in flashes:
+            f.move(slowTime)
+        
+        # Move the boots to the left.
+        for b in boots:
+            b.move(slowTime)
  
         # Move the platforms to the left.
         for p in platforms:
@@ -798,6 +836,12 @@ while True:
         
         # Delete hourglasses that have gone past the left of the screen.
         hourglasses = [h for h in hourglasses if h.rect.right >= 0]
+
+        # Delete flashes that have gone past the left of the screen.
+        flashes = [f for f in flashes if f.rect.right >= 0]
+        
+        # Delete boots that have gone past the left of the screen.
+        boots = [b for b in boots if b.rect.right >= 0]
         
         # Delete platforms that have gone past the left of the screen.
         for p in platforms[:]:
@@ -826,6 +870,14 @@ while True:
         # Draw the hourglasses.
         for h in hourglasses:
             h.draw(windowSurface)
+        
+        # Draw the flashes.
+        for f in flashes:
+            f.draw(windowSurface)
+        
+        # Draw the boots.
+        for b in boots:
+            b.draw(windowSurface)
 
         # Draw the floor.
         floor_width = floorImage.get_width()
@@ -891,6 +943,10 @@ while True:
             slowTime = True
             hourglass_collected_sound.play()
             pygame.mixer.music.pause()
+        
+        # If the player collects any flash it increases player's speed.
+
+        # If the player collects any boots it increases player's jump power.
         
         # Managing slow time.
         if slowTime:
