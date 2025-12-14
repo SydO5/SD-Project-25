@@ -560,6 +560,10 @@ while True:
     # Set up the start of the game.
     playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - 50)
 
+    current_min_speed = BADDIEMINSPEED
+    current_max_speed = BADDIEMAXSPEED
+    SPEED_INCREASE = 2 # Speed increase every saison change
+
     PLAYERYSPEED = 0
     JUMPSLEFT = 2
     on_ground = False
@@ -637,6 +641,8 @@ while True:
         if day  >= next_season_day and NEXTBACKGROUNDIMAGE is None:
             season_index = (season_index + 1) % len(seasons)
             current_season = seasons[season_index]
+            current_min_speed += SPEED_INCREASE
+            current_max_speed += SPEED_INCREASE
             baddieImage = baddieImages[current_season]
             followerBaddieImage = followerBaddieImages[current_season]
             platformImage = platformImages[current_season]
@@ -719,7 +725,7 @@ while True:
             
             newBaddie = {
                 "rect": pygame.Rect(WINDOWWIDTH, baddieY, baddieSize, baddieSize),
-                "speed": random.randint(BADDIEMINSPEED, BADDIEMAXSPEED),
+                "speed": random.randint(current_min_speed, current_max_speed),
                 "surface": pygame.transform.scale(baddie_surface, (baddieSize, baddieSize)),
                 "is_follower": is_follower,
                 "follow_timer": timer_value
