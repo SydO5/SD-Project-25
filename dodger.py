@@ -583,6 +583,10 @@ while True:
             PLAYERYSPEED = 0
             on_ground = True
             JUMPSLEFT = 2
+        # Collision of the player with the ceiling
+        if playerRect.top < -150:
+            playerRect.top = -150
+
 
         # Move the player around.
         if moveLeft and playerRect.left > 0:
