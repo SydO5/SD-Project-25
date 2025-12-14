@@ -958,6 +958,7 @@ while True:
             pygame.time.wait(50)
 
             if lives <= 0:
+                transichannel.stop()
                 if score > topScore:
                     topScore = score # set new top score
                 if day > topDay:
@@ -1039,11 +1040,13 @@ while True:
     # Stop the game and show the Game Over screen.
     if quit_to_menu:
             pygame.mixer.music.stop()
+            transichannel.stop()
             MainMenu()
             continue
     elif quit_to_menu == False:
         pygame.mixer.music.stop()
         hourglass_time_slow.stop()
+        transichannel.stop()
         
         gameOverSound.play(fade_ms = 1500)
 
