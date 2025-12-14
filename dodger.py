@@ -562,7 +562,7 @@ while True:
 
     current_min_speed = BADDIEMINSPEED
     current_max_speed = BADDIEMAXSPEED
-    SPEED_INCREASE = 2 # Speed increase every saison change
+    SPEED_INCREASE = 0.5 # Speed increase every saison change
 
     PLAYERYSPEED = 0
     JUMPSLEFT = 2
@@ -725,7 +725,7 @@ while True:
             
             newBaddie = {
                 "rect": pygame.Rect(WINDOWWIDTH, baddieY, baddieSize, baddieSize),
-                "speed": random.randint(current_min_speed, current_max_speed),
+                "speed": random.randint(int(current_min_speed), int(current_max_speed)),
                 "surface": pygame.transform.scale(baddie_surface, (baddieSize, baddieSize)),
                 "is_follower": is_follower,
                 "follow_timer": timer_value
