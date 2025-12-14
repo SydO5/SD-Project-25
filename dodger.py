@@ -454,6 +454,8 @@ current_season = seasons[season_index]
 musics = ["Spring 1.wav","Summer 1.wav","Autumn 1.wav","Winter 1.wav","Spring 2.wav","Summer 2.wav","Autumn 2.wav","Winter 2.wav"]
 transi = pygame.mixer.Sound("riser.wav")
 
+transichannel = pygame.mixer.Channel(2)
+
 def play_music(index):
     pygame.mixer.music.load(musics[index])
     pygame.mixer.music.play(-1)
@@ -622,7 +624,7 @@ while True:
         #changing music with seasons 
         if day % 85 == 0 and day != 0:
             pygame.mixer.music.fadeout(2200)
-            transi.play()
+            transichannel.play(transi)
         if day % 90 == 0 and day != 0 and last_day !=day:
             pygame.mixer.music.stop()
             transi.stop()
