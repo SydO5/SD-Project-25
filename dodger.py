@@ -10,6 +10,7 @@ BACKGROUND_ALPHA = 0
 BACKGROUND_FADE_SPEED = 10
 FPS = 60
 
+
 MUSICVOLUME = 0.5
 SFXVOLUME = 0.5
 volume_changed = False
@@ -428,6 +429,7 @@ pygame.init()
 mainClock = pygame.time.Clock()
 windowSurface = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
 WINDOWWIDTH, WINDOWHEIGHT = windowSurface.get_size()
+bounds = pygame.Rect(0, 0, WINDOWWIDTH, WINDOWHEIGHT)
 pygame.display.set_caption("Dodger")
 
 # Set up the background image for the menu.
@@ -450,6 +452,14 @@ backgrounds = {
 seasons = ["Spring", "Summer", "Autumn", "Winter"]
 season_index = 0
 current_season = seasons[season_index]
+
+musics = ["Spring 1.wav","Summer 1.wav","Autumn 1.wav","Winter 1.wav","Spring 2.wav","Summer 2.wav","Autumn 2.wav","Winter 2.wav"]
+transi = pygame.mixer.Sound("riser.wav")
+
+def play_music(index):
+    pygame.mixer.music.load(musics[index])
+    pygame.mixer.music.play(-1)
+    
 
 # Create red filter when the player hit a baddie.
 red_filter = pygame.Surface((WINDOWWIDTH, WINDOWHEIGHT))
@@ -505,6 +515,7 @@ playerImages = NinjaImages
 
 playerImage = playerImages["stoic"]
 playerRect = playerImage.get_rect()
+
 
 baddieImages = {"Spring": pygame.image.load("thorn.png").convert_alpha(),
                 "Summer": pygame.image.load("flame.png").convert_alpha(),
@@ -590,8 +601,11 @@ while True:
     moveLeft = moveRight = False
 
     stopMenuMusic()
-    pygame.mixer.music.load("music_game.wav")
-    pygame.mixer.music.play(-1, 0.0)
+    last_day = -1
+    current_index = 0
+    pygame.mixer.music.load(musics[current_index])
+    pygame.mixer.music.play(-1)
+
 
     while True: # The game loop runs while the game part is playing.
         score += 1 # Increase score.
@@ -605,7 +619,19 @@ while True:
             if day_timer >= 20:
                 day += 1
                 day_timer = 0
-        
+
+        #changing music with seasons 
+        if day % 85 == 0 and day != 0:
+            pygame.mixer.music.fadeout(2200)
+            transi.play()
+        if day % 90 == 0 and day != 0 and last_day !=day:
+            pygame.mixer.music.stop()
+            transi.stop()
+            current_index = (current_index + 1) % len(musics)
+            play_music(current_index)
+            last_day = day
+
+
         # Change background (season) based on number of days (cycle of seasons).
         if day == 0:
             BACKGROUNDIMAGE = backgrounds[current_season]
@@ -783,6 +809,9 @@ while True:
             PLAYERYSPEED = 0
             on_ground = True
             JUMPSLEFT = 2
+        # Collision of the player with the ceiling
+        if playerRect.top < -150:
+            playerRect.top = -150
 
         # Move the player around.
         if moveLeft and playerRect.left > 0:
@@ -926,6 +955,7 @@ while True:
             pygame.time.wait(50)
 
             if lives <= 0:
+                pygame.mixer.stop()
                 if score > topScore:
                     topScore = score # set new top score
                 if day > topDay:
